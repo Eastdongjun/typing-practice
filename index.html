@@ -1,0 +1,778 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="打字练习">
+<meta name="mobile-web-app-capable" content="yes">
+<link rel="manifest" href="manifest.json">
+<title>打字练习</title>
+<style>
+  :root {
+    --bg: #0f1117; --surface: #1a1d27; --border: #2a2d3a;
+    --text: #e1e4eb; --text-dim: #6b7080; --accent: #60a5fa;
+    --correct: #34d399; --error: #f87171; --cursor: #fbbf24;
+    --pinky: #a78bfa; --ring: #60a5fa; --middle: #34d399;
+    --index: #fbbf24; --thumb: #f87171;
+    --radius: 6px;
+    font-family: 'SF Mono','Cascadia Code','JetBrains Mono','Consolas',monospace;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    background:var(--bg); color:var(--text);
+    min-height:100vh; display:flex; flex-direction:column;
+    align-items:center; padding:30px 20px 80px;
+  }
+  .container { width:100%; max-width:780px; }
+  header { display:flex; align-items:center; justify-content:space-between; margin-bottom:24px; }
+  h1 { font-size:18px; font-weight:600; letter-spacing:-0.3px; }
+  .stats { display:flex; gap:24px; }
+  .stat { text-align:center; }
+  .stat-value { font-size:26px; font-weight:600; color:var(--accent); font-variant-numeric:tabular-nums; }
+  .stat-label { font-size:11px; color:var(--text-dim); text-transform:uppercase; letter-spacing:0.8px; }
+
+  /* Mode tabs */
+  .mode-bar { display:flex; gap:4px; margin-bottom:24px; background:var(--surface); border-radius:var(--radius); padding:3px; }
+  .mode-btn { flex:1; padding:8px 4px; border:none; background:transparent; color:var(--text-dim); font-size:13px; border-radius:calc(var(--radius) - 2px); cursor:pointer; transition:background .15s,color .15s; font-family:inherit; }
+  .mode-btn:hover { color:var(--text); }
+  .mode-btn.active { background:var(--border); color:var(--text); }
+
+  /* Finger selector */
+  .finger-selector {
+    display:none; gap:6px; margin-bottom:20px; flex-wrap:wrap; justify-content:center;
+  }
+  .finger-selector.visible { display:flex; }
+  .finger-btn {
+    display:flex; flex-direction:column; align-items:center; gap:4px;
+    padding:8px 14px; border:1px solid var(--border); border-radius:var(--radius);
+    background:var(--surface); color:var(--text-dim); font-size:11px;
+    cursor:pointer; transition:all .15s; font-family:inherit; min-width:60px;
+  }
+  .finger-btn:hover { color:var(--text); border-color:var(--accent); }
+  .finger-btn.active { color:var(--text); border-color:transparent; }
+  .finger-btn .finger-icon { font-size:18px; }
+  .finger-btn.pinky { --fc: var(--pinky); }
+  .finger-btn.ring { --fc: var(--ring); }
+  .finger-btn.middle { --fc: var(--middle); }
+  .finger-btn.index { --fc: var(--index); }
+  .finger-btn.thumb { --fc: var(--thumb); }
+  .finger-btn.active.pinky { background:var(--pinky); color:#0f1117; }
+  .finger-btn.active.ring { background:var(--ring); color:#0f1117; }
+  .finger-btn.active.middle { background:var(--middle); color:#0f1117; }
+  .finger-btn.active.index { background:var(--index); color:#0f1117; }
+  .finger-btn.active.thumb { background:var(--thumb); color:#0f1117; }
+
+  .hand-label {
+    font-size:11px; color:var(--text-dim); text-align:center;
+    margin-bottom:6px; letter-spacing:0.5px;
+  }
+
+  .finger-group {
+    display:flex; gap:6px; justify-content:center;
+  }
+
+  .hand-section {
+    display:flex; flex-direction:column; gap:6px;
+    padding:8px 12px; background:var(--surface); border-radius:var(--radius);
+    border:1px solid var(--border);
+  }
+
+  .text-display {
+    background:var(--surface); border:1px solid var(--border);
+    border-radius:var(--radius); padding:24px 28px;
+    font-size:20px; line-height:1.8; letter-spacing:0.3px;
+    min-height:140px; cursor:text; position:relative;
+    user-select:none; overflow-wrap:break-word; tab-size:2;
+  }
+  .text-display.zh { font-size:24px; line-height:2.4; letter-spacing:3px; }
+  .text-display.finger-mode { font-size:26px; letter-spacing:4px; text-align:center; }
+  .text-display.focused { border-color:var(--accent); }
+
+  .ime-capture {
+    position:absolute; top:0; left:0; width:100%; height:100%;
+    opacity:0; resize:none; border:none; outline:none;
+    background:transparent; font-size:20px;
+    caret-color:transparent; z-index:2;
+  }
+
+  .char { position:relative; transition:color .08s; }
+  .char.untyped { color:var(--text-dim); }
+  .char.correct { color:var(--correct); }
+  .char.incorrect { color:var(--error); }
+  .char.cursor::after {
+    content:''; position:absolute; left:0; bottom:-2px;
+    width:100%; height:2px; background:var(--cursor);
+    animation:blink 1s step-end infinite;
+  }
+  @keyframes blink { 0%,100% { opacity:1; } 50% { opacity:0; } }
+  .placeholder { color:var(--text-dim); font-style:italic; }
+  .result { margin-top:16px; text-align:center; color:var(--text-dim); font-size:14px; min-height:24px; }
+  .reset-btn { margin-top:12px; padding:10px 24px; border:1px solid var(--border); border-radius:var(--radius); background:var(--surface); color:var(--text); font-size:13px; cursor:pointer; font-family:inherit; transition:background .15s; }
+  .reset-btn:hover { background:var(--border); }
+  .error-flash { animation:flash .3s; }
+  @keyframes flash { 0%,100% { background:transparent; } 50% { background:rgba(248,113,113,0.08); } }
+  .hint { color:var(--text-dim); font-size:12px; margin-top:12px; text-align:center; }
+
+  /* Full keyboard */
+  .keyboard-section { margin-top:24px; }
+  .kb-toggle-row { text-align:center; margin-top:14px; }
+  .keyboard-toggle { display:inline-flex; align-items:center; gap:6px; padding:6px 12px; border:1px solid var(--border); border-radius:var(--radius); background:var(--surface); color:var(--text-dim); font-size:12px; cursor:pointer; font-family:inherit; transition:color .15s,border-color .15s; }
+  .keyboard-toggle:hover { color:var(--text); border-color:var(--accent); }
+  .keyboard { margin-top:16px; display:flex; flex-direction:column; gap:4px; padding:18px 10px; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); overflow-x:auto; }
+  .keyboard.hidden-kb { display:none; }
+  .kb-row { display:flex; gap:3px; justify-content:center; }
+  .kb-key { min-width:32px; height:36px; border-radius:4px; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:600; color:#0f1117; white-space:nowrap; padding:0 4px; transition:all .15s; }
+  .kb-key.wide { min-width:50px; }
+  .kb-key.wider { min-width:66px; }
+  .kb-key.widest { min-width:90px; }
+  .kb-key.pinky-left { background:var(--pinky); }
+  .kb-key.ring-left { background:var(--ring); }
+  .kb-key.middle-left { background:var(--middle); }
+  .kb-key.index-left { background:var(--index); }
+  .kb-key.thumb-left { background:var(--thumb); opacity:0.7; }
+  .kb-key.index-right { background:var(--index); }
+  .kb-key.middle-right { background:var(--middle); }
+  .kb-key.ring-right { background:var(--ring); }
+  .kb-key.pinky-right { background:var(--pinky); }
+  .kb-key.thumb-right { background:var(--thumb); opacity:0.7; }
+
+  /* Dim non-target keys when a finger is selected */
+  .kb-key.dimmed { opacity:0.15; }
+  .kb-key.highlighted { opacity:1; transform:scale(1.08); z-index:1; position:relative; }
+
+  .kb-legend { display:flex; gap:16px; justify-content:center; margin-top:12px; font-size:11px; color:var(--text-dim); flex-wrap:wrap; }
+  .kb-legend span { display:flex; align-items:center; gap:5px; cursor:pointer; padding:2px 6px; border-radius:3px; transition:background .15s; }
+  .kb-legend span:hover { background:var(--border); }
+  .kb-legend span.selected { background:var(--border); color:var(--text); }
+  .kb-dot { width:10px; height:10px; border-radius:2px; }
+  .kb-dot.pinky { background:var(--pinky); }
+  .kb-dot.ring { background:var(--ring); }
+  .kb-dot.middle { background:var(--middle); }
+  .kb-dot.index { background:var(--index); }
+  .kb-dot.thumb { background:var(--thumb); opacity:0.7; }
+  .kb-divider { color:var(--border); margin:0 6px; }
+  .os-toggle-row { text-align:center; margin-top:8px; }
+  .os-toggle { display:inline-flex; gap:4px; background:var(--surface); border-radius:var(--radius); padding:3px; }
+  .os-toggle-btn { padding:4px 12px; border:none; background:transparent; color:var(--text-dim); font-size:11px; border-radius:calc(var(--radius) - 2px); cursor:pointer; font-family:inherit; transition:all .15s; }
+  .os-toggle-btn:hover { color:var(--text); }
+  .os-toggle-btn.active { background:var(--border); color:var(--text); }
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <h1>打字练习</h1>
+    <div class="stats">
+      <div class="stat"><div class="stat-value" id="wpm">0</div><div class="stat-label">字/分</div></div>
+      <div class="stat"><div class="stat-value" id="accuracy">-</div><div class="stat-label">准确率</div></div>
+      <div class="stat"><div class="stat-value" id="progress">0</div><div class="stat-label">进度</div></div>
+    </div>
+  </header>
+
+  <div class="mode-bar">
+    <button class="mode-btn active" data-mode="words">英文词</button>
+    <button class="mode-btn" data-mode="quotes">名言</button>
+    <button class="mode-btn" data-mode="code">代码</button>
+    <button class="mode-btn" data-mode="chinese">中文</button>
+    <button class="mode-btn" data-mode="finger">指法训练</button>
+  </div>
+
+  <!-- Finger selector (shown only in finger mode) -->
+  <div class="finger-selector" id="fingerSelector">
+    <div class="hand-section">
+      <div class="hand-label">左手</div>
+      <div class="finger-group">
+        <button class="finger-btn pinky" data-finger="pinky-left">
+          <span class="finger-icon">🤙</span>小指
+        </button>
+        <button class="finger-btn ring" data-finger="ring-left">
+          <span class="finger-icon">💍</span>无名指
+        </button>
+        <button class="finger-btn middle" data-finger="middle-left">
+          <span class="finger-icon">🖕</span>中指
+        </button>
+        <button class="finger-btn index" data-finger="index-left">
+          <span class="finger-icon">☝️</span>食指
+        </button>
+      </div>
+    </div>
+    <div class="hand-section">
+      <div class="hand-label">右手</div>
+      <div class="finger-group">
+        <button class="finger-btn index active" data-finger="index-right">
+          <span class="finger-icon">☝️</span>食指
+        </button>
+        <button class="finger-btn middle" data-finger="middle-right">
+          <span class="finger-icon">🖕</span>中指
+        </button>
+        <button class="finger-btn ring" data-finger="ring-right">
+          <span class="finger-icon">💍</span>无名指
+        </button>
+        <button class="finger-btn pinky" data-finger="pinky-right">
+          <span class="finger-icon">🤙</span>小指
+        </button>
+      </div>
+    </div>
+    <div class="hand-section">
+      <div class="hand-label">拇指</div>
+      <div class="finger-group">
+        <button class="finger-btn thumb" data-finger="thumb-space">
+          <span class="finger-icon">👍</span>空格
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div style="position:relative;">
+    <div class="text-display" id="textDisplay"></div>
+    <textarea class="ime-capture" id="imeInput" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"></textarea>
+  </div>
+
+  <div class="result" id="result"></div>
+
+  <div style="text-align:center">
+    <button class="reset-btn" id="resetBtn">重新开始 (Ctrl+R)</button>
+  </div>
+
+  <div class="keyboard-section">
+    <div class="kb-toggle-row">
+      <button class="keyboard-toggle" id="kbToggle">⌨ 隐藏指法键盘</button>
+    </div>
+    <div class="keyboard" id="keyboard">
+      <div class="kb-row" id="kbRow1"></div>
+      <div class="kb-row" id="kbRow2"></div>
+      <div class="kb-row" id="kbRow3"></div>
+      <div class="kb-row" id="kbRow4"></div>
+      <div class="kb-row" id="kbRow5"></div>
+      <div class="kb-legend" id="kbLegend"></div>
+      <div style="text-align:center;margin-top:10px;font-size:11px;color:var(--text-dim)">
+        左手管左半边 <span class="kb-divider">|</span> 右手管右半边
+      </div>
+      <div class="os-toggle-row">
+        <div class="os-toggle" id="osToggle">
+          <button class="os-toggle-btn" data-os="mac">Mac</button>
+          <button class="os-toggle-btn" data-os="win">Windows</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="hint">点击文字区域开始 · Ctrl+R / Cmd+R / Esc 换一题 · 打完自动评分</div>
+</div>
+
+<script>
+  // ---- Finger zone definitions ----
+  var fingerZones = {
+    'pinky-left':    ['`','1','q','a','z'],
+    'ring-left':     ['2','w','s','x'],
+    'middle-left':   ['3','e','d','c'],
+    'index-left':    ['4','5','r','t','f','g','v','b'],
+    'index-right':   ['6','7','y','u','h','j','n','m'],
+    'middle-right':  ['8','i','k',','],
+    'ring-right':    ['9','o','l','.'],
+    'pinky-right':   ['0','-','=','p','[',']','\\',';',"'",'/'],
+    'thumb-space':   [' ']
+  };
+
+  var fingerNames = {
+    'pinky-left': '左手小指', 'ring-left': '左手无名指', 'middle-left': '左手中指', 'index-left': '左手食指',
+    'index-right': '右手食指', 'middle-right': '右手中指', 'ring-right': '右手无名指', 'pinky-right': '右手小指',
+    'thumb-space': '拇指（空格）'
+  };
+
+  // ---- Keyboard layout data ----
+  // Dual keyboard layouts: Mac bottom row differs from Windows
+  var kbLayouts = {
+    mac: [
+      [
+        {label:'`', finger:'pinky-left'},{label:'1', finger:'pinky-left'},{label:'2', finger:'ring-left'},
+        {label:'3', finger:'middle-left'},{label:'4', finger:'index-left'},{label:'5', finger:'index-left'},
+        {label:'6', finger:'index-right'},{label:'7', finger:'index-right'},{label:'8', finger:'middle-right'},
+        {label:'9', finger:'ring-right'},{label:'0', finger:'pinky-right'},{label:'-', finger:'pinky-right'},
+        {label:'=', finger:'pinky-right'},{label:'⌫', finger:'pinky-right', cls:'wide'}
+      ],
+      [
+        {label:'Tab', finger:'pinky-left', cls:'wide'},{label:'Q', finger:'pinky-left'},{label:'W', finger:'ring-left'},
+        {label:'E', finger:'middle-left'},{label:'R', finger:'index-left'},{label:'T', finger:'index-left'},
+        {label:'Y', finger:'index-right'},{label:'U', finger:'index-right'},{label:'I', finger:'middle-right'},
+        {label:'O', finger:'ring-right'},{label:'P', finger:'pinky-right'},{label:'[', finger:'pinky-right'},
+        {label:']', finger:'pinky-right'},{label:'\\', finger:'pinky-right'}
+      ],
+      [
+        {label:'Caps', finger:'pinky-left', cls:'wide'},{label:'A', finger:'pinky-left'},{label:'S', finger:'ring-left'},
+        {label:'D', finger:'middle-left'},{label:'F', finger:'index-left'},{label:'G', finger:'index-left'},
+        {label:'H', finger:'index-right'},{label:'J', finger:'index-right'},{label:'K', finger:'middle-right'},
+        {label:'L', finger:'ring-right'},{label:';', finger:'pinky-right'},{label:"'", finger:'pinky-right'},
+        {label:'Enter', finger:'pinky-right', cls:'wider'}
+      ],
+      [
+        {label:'Shift', finger:'pinky-left', cls:'widest'},{label:'Z', finger:'pinky-left'},{label:'X', finger:'ring-left'},
+        {label:'C', finger:'middle-left'},{label:'V', finger:'index-left'},{label:'B', finger:'index-left'},
+        {label:'N', finger:'index-right'},{label:'M', finger:'index-right'},{label:',', finger:'middle-right'},
+        {label:'.', finger:'ring-right'},{label:'/', finger:'pinky-right'},{label:'Shift', finger:'pinky-right', cls:'widest'}
+      ],
+      [
+        {label:'fn', finger:'pinky-left', cls:'wide'},{label:'ctrl', finger:'pinky-left', cls:'wide'},
+        {label:'option', finger:'ring-left', cls:'wide'},{label:'cmd \u2318', finger:'thumb-left', cls:'wide'},
+        {label:'Space', finger:'thumb-space', cls:'widest'},
+        {label:'cmd \u2318', finger:'thumb-right', cls:'wide'},
+        {label:'option', finger:'ring-right', cls:'wide'},{label:'ctrl', finger:'pinky-right', cls:'wide'}
+      ]
+    ],
+    win: [
+      [
+        {label:'`', finger:'pinky-left'},{label:'1', finger:'pinky-left'},{label:'2', finger:'ring-left'},
+        {label:'3', finger:'middle-left'},{label:'4', finger:'index-left'},{label:'5', finger:'index-left'},
+        {label:'6', finger:'index-right'},{label:'7', finger:'index-right'},{label:'8', finger:'middle-right'},
+        {label:'9', finger:'ring-right'},{label:'0', finger:'pinky-right'},{label:'-', finger:'pinky-right'},
+        {label:'=', finger:'pinky-right'},{label:'⌫', finger:'pinky-right', cls:'wide'}
+      ],
+      [
+        {label:'Tab', finger:'pinky-left', cls:'wide'},{label:'Q', finger:'pinky-left'},{label:'W', finger:'ring-left'},
+        {label:'E', finger:'middle-left'},{label:'R', finger:'index-left'},{label:'T', finger:'index-left'},
+        {label:'Y', finger:'index-right'},{label:'U', finger:'index-right'},{label:'I', finger:'middle-right'},
+        {label:'O', finger:'ring-right'},{label:'P', finger:'pinky-right'},{label:'[', finger:'pinky-right'},
+        {label:']', finger:'pinky-right'},{label:'\\', finger:'pinky-right'}
+      ],
+      [
+        {label:'Caps', finger:'pinky-left', cls:'wide'},{label:'A', finger:'pinky-left'},{label:'S', finger:'ring-left'},
+        {label:'D', finger:'middle-left'},{label:'F', finger:'index-left'},{label:'G', finger:'index-left'},
+        {label:'H', finger:'index-right'},{label:'J', finger:'index-right'},{label:'K', finger:'middle-right'},
+        {label:'L', finger:'ring-right'},{label:';', finger:'pinky-right'},{label:"'", finger:'pinky-right'},
+        {label:'Enter', finger:'pinky-right', cls:'wider'}
+      ],
+      [
+        {label:'Shift', finger:'pinky-left', cls:'widest'},{label:'Z', finger:'pinky-left'},{label:'X', finger:'ring-left'},
+        {label:'C', finger:'middle-left'},{label:'V', finger:'index-left'},{label:'B', finger:'index-left'},
+        {label:'N', finger:'index-right'},{label:'M', finger:'index-right'},{label:',', finger:'middle-right'},
+        {label:'.', finger:'ring-right'},{label:'/', finger:'pinky-right'},{label:'Shift', finger:'pinky-right', cls:'widest'}
+      ],
+      [
+        {label:'Ctrl', finger:'pinky-left', cls:'wide'},{label:'Win', finger:'ring-left', cls:'wide'},
+        {label:'Alt', finger:'ring-left', cls:'wide'},
+        {label:'Space', finger:'thumb-space', cls:'widest'},
+        {label:'Alt', finger:'ring-right', cls:'wide'},{label:'Win', finger:'ring-right', cls:'wide'},
+        {label:'Menu', finger:'pinky-right', cls:'wide'},{label:'Ctrl', finger:'pinky-right', cls:'wide'}
+      ]
+    ]
+  };
+  var kbRows = kbLayouts.mac; // default to Mac, updated on OS detect
+
+  // ---- Generate finger training text ----
+  function generateFingerText(finger) {
+    var keys = fingerZones[finger];
+    if (!keys) return '';
+    var chars = [];
+    // Build a set of 12-25 keys for a training line
+    var count = 15 + Math.floor(Math.random() * 10);
+    for (var i = 0; i < count; i++) {
+      chars.push(keys[Math.floor(Math.random() * keys.length)]);
+    }
+    return chars.join('');
+  }
+
+  // ---- Word sets ----
+  var wordSets = {
+    words: [
+      "the and you that this with from have been they will what when make like just some them your can say each how now then also more want most good look take time work need give know come only even much into well such back your life part same name year hand keep open play help find must kind love free show home away long hard ever down full side here very made sign moon line rain look dark cool warm plan tree walk rose bird soul deep slow fall wide ring rule fire path",
+      "please think always people change number before between because enough really little system back people country under always another better against through world around however something thought before company different problem public friend himself",
+      "practice makes perfect nothing is impossible believe in yourself every moment counts the only way to do great work is to love what you do stay hungry stay foolish life is what happens when you are busy making other plans"
+    ],
+    quotes: [
+      "The only way to do great work is to love what you do. - Steve Jobs",
+      "Stay hungry, stay foolish. - Steve Jobs",
+      "It does not matter how slowly you go as long as you do not stop. - Confucius",
+      "Simplicity is the ultimate sophistication. - Leonardo da Vinci",
+      "Code is like humor. When you have to explain it, it is bad. - Cory House",
+      "First, solve the problem. Then, write the code. - John Johnson",
+      "Talk is cheap. Show me the code. - Linus Torvalds",
+      "The best error message is the one that never shows up. - Thomas Fuchs",
+      "In the middle of difficulty lies opportunity. - Albert Einstein",
+      "The future depends on what you do today. - Mahatma Gandhi",
+      "It is never too late to be what you might have been. - George Eliot",
+      "Do what you can, with what you have, where you are. - Theodore Roosevelt",
+      "Creativity is intelligence having fun. - Albert Einstein",
+      "Less, but better. - Dieter Rams",
+      "Make it work, make it right, make it fast. - Kent Beck"
+    ],
+    code: [
+      "const greeting = 'hello world';\nconsole.log(greeting);",
+      "function add(a, b) {\n  return a + b;\n}\n\nconst sum = add(3, 5);",
+      "const items = ['apple','banana','cherry'];\nitems.forEach(item => {\n  console.log(item);\n});",
+      "import React from 'react';\n\nfunction App() {\n  return (\n    <div className='app'>\n      <h1>Hello</h1>\n    </div>\n  );\n}",
+      "const user = {\n  name: 'Alice',\n  age: 28,\n  email: 'alice@example.com',\n};\n\nconsole.log(user.name);",
+      "async function fetchData(url) {\n  const res = await fetch(url);\n  if (!res.ok) throw new Error('Failed');\n  return res.json();\n}",
+      "const doubled = numbers.map(n => n * 2);\nconst filtered = doubled.filter(n => n > 10);\nconst sum = filtered.reduce((a,b) => a + b, 0);",
+      "function fibonacci(n) {\n  if (n <= 1) return n;\n  return fibonacci(n-1) + fibonacci(n-2);\n}",
+      "def greet(name):\n    return f'Hello, {name}!'\n\nprint(greet('World'))",
+      "type Props = {\n  title: string;\n  count: number;\n};\n\nconst Card = ({title,count}: Props) => (\n  <div>{title}: {count}</div>\n);"
+    ],
+    chinese: [
+      "世界上只有一种真正的英雄主义，那就是认清生活真相之后依然热爱生活。",
+      "不积跬步，无以至千里；不积小流，无以成江海。",
+      "天行健，君子以自强不息。地势坤，君子以厚德载物。",
+      "人生如逆旅，我亦是行人。纸上得来终觉浅，绝知此事要躬行。",
+      "宝剑锋从磨砺出，梅花香自苦寒来。长风破浪会有时，直挂云帆济沧海。",
+      "三人行，必有我师焉。择其善者而从之，其不善者而改之。",
+      "学而不思则罔，思而不学则殆。知之为知之，不知为不知，是知也。",
+      "温故而知新，可以为师矣。敏而好学，不耻下问。",
+      "路漫漫其修远兮，吾将上下而求索。山重水复疑无路，柳暗花明又一村。",
+      "今天天气真好，我们去公园散步吧。阳光洒在树叶上，微风吹过，感觉特别舒服。",
+      "学习编程是一件很有意思的事情。每天写一点代码，慢慢就会越来越熟练。",
+      "坚持每天练习，哪怕只有十分钟。时间久了，就会看到很大的进步。"
+    ]
+  };
+
+  // ---- DOM refs ----
+  var textDisplay = document.getElementById('textDisplay');
+  var imeInput = document.getElementById('imeInput');
+  var wpmEl = document.getElementById('wpm');
+  var accuracyEl = document.getElementById('accuracy');
+  var progressEl = document.getElementById('progress');
+  var resultEl = document.getElementById('result');
+  var resetBtn = document.getElementById('resetBtn');
+  var kbToggle = document.getElementById('kbToggle');
+  var keyboard = document.getElementById('keyboard');
+  var fingerSelector = document.getElementById('fingerSelector');
+
+  // ---- State ----
+  var mode = 'words';
+  var activeFinger = 'index-right'; // default: right index (weak spot)
+  var targetChars = [];
+  var currentIndex = 0;
+  var errors = 0;
+  var totalKeystrokes = 0;
+  var startTime = null;
+  var finished = false;
+  var compositionActive = false;
+
+  function pickText() {
+    if (mode === 'finger') return generateFingerText(activeFinger);
+    var set = wordSets[mode];
+    return set[Math.floor(Math.random() * set.length)];
+  }
+
+  function initText() {
+    var raw = pickText();
+    targetChars = Array.from(raw);
+    currentIndex = 0;
+    errors = 0;
+    totalKeystrokes = 0;
+    startTime = null;
+    finished = false;
+    compositionActive = false;
+    imeInput.value = '';
+    render();
+    updateStats();
+    resultEl.textContent = '';
+    textDisplay.classList.remove('error-flash');
+    wpmEl.textContent = '0';
+    accuracyEl.textContent = '-';
+    progressEl.textContent = '0';
+
+    textDisplay.classList.remove('zh', 'finger-mode');
+    if (mode === 'chinese') textDisplay.classList.add('zh');
+    if (mode === 'finger') textDisplay.classList.add('finger-mode');
+
+    if (mode === 'finger') {
+      resultEl.innerHTML = '<span style="color:var(--text-dim)">练的是 <b>' + fingerNames[activeFinger] + '</b>，只打它负责的键</span>';
+    }
+  }
+
+  function render() {
+    var html = '';
+    for (var i = 0; i < targetChars.length; i++) {
+      var cls = 'char untyped';
+      if (i < currentIndex) cls = 'char correct';
+      if (i === currentIndex && !finished) cls += ' cursor';
+      var ch = targetChars[i];
+      var esc = ch === '\n' ? '<br>' :
+        ch === ' ' ? '&nbsp;' :
+        ch === '<' ? '&lt;' :
+        ch === '>' ? '&gt;' :
+        ch === '&' ? '&amp;' : ch;
+      html += '<span class="' + cls + '">' + esc + '</span>';
+    }
+    if (html === '') html = '<span class="placeholder">点击这里开始打字&hellip;</span>';
+    textDisplay.innerHTML = html;
+  }
+
+  function markIncorrect() {
+    var spans = textDisplay.querySelectorAll('.char');
+    if (spans[currentIndex]) spans[currentIndex].classList.add('incorrect');
+    textDisplay.classList.add('error-flash');
+    setTimeout(function(){ textDisplay.classList.remove('error-flash'); }, 300);
+  }
+
+  function updateStats() {
+    if (!startTime) return;
+    var elapsed = (Date.now() - startTime) / 60000;
+    var divisor = (mode === 'chinese' || mode === 'finger') ? 2 : 5;
+    var words = currentIndex / divisor;
+    var wpm = elapsed > 0 ? Math.round(words / elapsed) : 0;
+    var acc = totalKeystrokes > 0 ? Math.round(((totalKeystrokes - errors) / totalKeystrokes) * 100) : 100;
+    var prog = Math.round((currentIndex / targetChars.length) * 100);
+    wpmEl.textContent = wpm;
+    accuracyEl.textContent = acc + '%';
+    progressEl.textContent = prog;
+  }
+
+  function finish() {
+    finished = true;
+    var elapsed = (Date.now() - startTime) / 60000;
+    var divisor = (mode === 'chinese' || mode === 'finger') ? 2 : 5;
+    var words = targetChars.length / divisor;
+    var wpm = elapsed > 0 ? Math.round(words / elapsed) : 0;
+    var acc = totalKeystrokes > 0 ? Math.round(((totalKeystrokes - errors) / totalKeystrokes) * 100) : 100;
+    wpmEl.textContent = wpm;
+    accuracyEl.textContent = acc + '%';
+    progressEl.textContent = '100';
+
+    var grade, color;
+    if (wpm >= 50 && acc >= 98) { grade = '大师级'; color = '#fbbf24'; }
+    else if (wpm >= 30 && acc >= 95) { grade = '优秀'; color = '#34d399'; }
+    else if (wpm >= 20 && acc >= 90) { grade = '良好'; color = '#60a5fa'; }
+    else if (wpm >= 10) { grade = '继续加油'; color = '#a78bfa'; }
+    else { grade = '起步阶段'; color = '#f87171'; }
+
+    var fingerInfo = mode === 'finger' ? ' | ' + fingerNames[activeFinger] : '';
+    resultEl.innerHTML = '<span style="color:' + color + ';font-weight:600">' + grade + '</span> &mdash; ' + wpm + ' 字/分 | ' + acc + '% 准确率 | ' + errors + ' 个错误' + fingerInfo;
+    render();
+  }
+
+  function processChar(ch) {
+    if (finished) return;
+    if (!startTime) { startTime = Date.now(); updateStats(); }
+    totalKeystrokes++;
+    var expected = targetChars[currentIndex];
+    if (ch === expected) {
+      currentIndex++;
+      updateStats();
+      if (currentIndex >= targetChars.length) { finish(); return; }
+    } else {
+      errors++;
+      updateStats();
+      markIncorrect();
+    }
+    render();
+  }
+
+  // ---- OS detection ----
+  var currentOS = 'mac';
+  (function detectOS() {
+    var ua = navigator.platform || navigator.userAgent;
+    if (/Win/i.test(ua)) { currentOS = 'win'; }
+    else if (/Mac/i.test(ua)) { currentOS = 'mac'; }
+    kbRows = kbLayouts[currentOS];
+    // Update OS toggle buttons
+    document.querySelectorAll('.os-toggle-btn').forEach(function(b) {
+      b.classList.toggle('active', b.dataset.os === currentOS);
+    });
+  })();
+
+  // ---- Build keyboard ----
+  function buildKeyboard() {
+    var rowIds = ['kbRow1','kbRow2','kbRow3','kbRow4','kbRow5'];
+    for (var r = 0; r < kbRows.length; r++) {
+      var rowEl = document.getElementById(rowIds[r]);
+      if (!rowEl) continue;
+      var html = '';
+      for (var k = 0; k < kbRows[r].length; k++) {
+        var key = kbRows[r][k];
+        var cls = 'kb-key ' + key.finger + (key.cls ? ' ' + key.cls : '');
+        html += '<span class="' + cls + '" data-finger="' + key.finger + '" data-label="' + key.label + '">' + key.label + '</span>';
+      }
+      rowEl.innerHTML = html;
+    }
+
+    // Legend
+    var fingers = [
+      {id:'pinky-left', label:'小指', dot:'pinky'},
+      {id:'ring-left', label:'无名指', dot:'ring'},
+      {id:'middle-left', label:'中指', dot:'middle'},
+      {id:'index-left', label:'食指', dot:'index'},
+      {id:'index-right', label:'食指', dot:'index'},
+      {id:'middle-right', label:'中指', dot:'middle'},
+      {id:'ring-right', label:'无名指', dot:'ring'},
+      {id:'pinky-right', label:'小指', dot:'pinky'},
+      {id:'thumb-space', label:'拇指', dot:'thumb'}
+    ];
+    var legendEl = document.getElementById('kbLegend');
+    var legendHtml = '';
+    var seen = {};
+    for (var i = 0; i < fingers.length; i++) {
+      var f = fingers[i];
+      var key = f.id;
+      if (seen[key]) continue;
+      seen[key] = true;
+      var handSide = key.indexOf('left') !== -1 ? '左手' : (key.indexOf('right') !== -1 ? '右手' : '');
+      legendHtml += '<span data-finger="' + key + '" class="kb-legend-finger"><span class="kb-dot ' + f.dot + '"></span> ' + handSide + f.label + '</span>';
+    }
+    legendEl.innerHTML = legendHtml;
+
+    // Legend click to select finger
+    legendEl.querySelectorAll('.kb-legend-finger').forEach(function(el) {
+      el.addEventListener('click', function() {
+        var fid = el.dataset.finger;
+        if (mode === 'finger') {
+          selectFinger(fid);
+        }
+      });
+    });
+
+    highlightKeyboard();
+  }
+
+  function highlightKeyboard() {
+    var allKeys = keyboard.querySelectorAll('.kb-key');
+    var legendItems = keyboard.querySelectorAll('.kb-legend-finger');
+
+    if (mode === 'finger') {
+      // Dim all, highlight only active finger
+      allKeys.forEach(function(k) {
+        k.classList.add('dimmed');
+        k.classList.remove('highlighted');
+      });
+      var targetKeys = keyboard.querySelectorAll('.kb-key[data-finger="' + activeFinger + '"]');
+      targetKeys.forEach(function(k) {
+        k.classList.remove('dimmed');
+        k.classList.add('highlighted');
+      });
+
+      legendItems.forEach(function(item) {
+        item.classList.toggle('selected', item.dataset.finger === activeFinger);
+      });
+    } else {
+      // Normal mode: all visible, no highlights
+      allKeys.forEach(function(k) {
+        k.classList.remove('dimmed', 'highlighted');
+      });
+      legendItems.forEach(function(item) { item.classList.remove('selected'); });
+    }
+  }
+
+  function selectFinger(fid) {
+    activeFinger = fid;
+    // Update finger buttons
+    fingerSelector.querySelectorAll('.finger-btn').forEach(function(b) {
+      b.classList.toggle('active', b.dataset.finger === fid);
+    });
+    highlightKeyboard();
+    initText();
+    imeInput.focus();
+  }
+
+  // ---- Event handlers ----
+
+  imeInput.addEventListener('keydown', function(e) {
+    if (finished) return;
+    if (e.key === 'Escape' || (e.key === 'r' && (e.ctrlKey || e.metaKey))) {
+      e.preventDefault();
+      initText();
+      imeInput.focus();
+      return;
+    }
+    if (compositionActive) return;
+
+    if (e.key === 'Enter') { e.preventDefault(); processChar('\n'); return; }
+
+    if (e.key === 'Backspace') {
+      e.preventDefault();
+      if (currentIndex > 0) {
+        currentIndex--;
+        var spans = textDisplay.querySelectorAll('.char');
+        if (spans[currentIndex]) spans[currentIndex].classList.remove('incorrect');
+      }
+      render();
+      return;
+    }
+
+    if (e.key.length === 1 && !e.ctrlKey && !e.altKey && !e.metaKey) {
+      e.preventDefault();
+      processChar(e.key);
+    }
+  });
+
+  imeInput.addEventListener('compositionstart', function() { compositionActive = true; });
+  imeInput.addEventListener('compositionend', function(e) {
+    compositionActive = false;
+    var text = e.data;
+    if (!text) return;
+    if (!startTime) startTime = Date.now();
+    for (var i = 0; i < text.length; i++) processChar(text[i]);
+    imeInput.value = '';
+  });
+
+  imeInput.addEventListener('input', function() {
+    if (compositionActive) return;
+    var val = imeInput.value;
+    if (!val) return;
+    for (var i = 0; i < val.length; i++) processChar(val[i]);
+    imeInput.value = '';
+  });
+
+  textDisplay.addEventListener('click', function() { imeInput.focus(); });
+  imeInput.addEventListener('focus', function() { textDisplay.classList.add('focused'); });
+  imeInput.addEventListener('blur', function() { textDisplay.classList.remove('focused'); });
+
+  // Mode switching
+  document.querySelectorAll('.mode-btn').forEach(function(btn) {
+    btn.addEventListener('click', function(e) {
+      e.stopPropagation();
+      document.querySelectorAll('.mode-btn').forEach(function(b) { b.classList.remove('active'); });
+      btn.classList.add('active');
+      mode = btn.dataset.mode;
+
+      if (mode === 'finger') {
+        fingerSelector.classList.add('visible');
+      } else {
+        fingerSelector.classList.remove('visible');
+      }
+      highlightKeyboard();
+      initText();
+      imeInput.focus();
+    });
+  });
+
+  // Finger selection buttons
+  fingerSelector.querySelectorAll('.finger-btn').forEach(function(btn) {
+    btn.addEventListener('click', function(e) {
+      e.stopPropagation();
+      selectFinger(btn.dataset.finger);
+    });
+  });
+
+  resetBtn.addEventListener('click', function() { initText(); imeInput.focus(); });
+
+  kbToggle.addEventListener('click', function() {
+    keyboard.classList.toggle('hidden-kb');
+    kbToggle.textContent = keyboard.classList.contains('hidden-kb') ? '⌨ 显示指法键盘' : '⌨ 隐藏指法键盘';
+  });
+
+  // OS toggle
+  document.querySelectorAll('.os-toggle-btn').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      currentOS = btn.dataset.os;
+      kbRows = kbLayouts[currentOS];
+      document.querySelectorAll('.os-toggle-btn').forEach(function(b) { b.classList.remove('active'); });
+      btn.classList.add('active');
+      buildKeyboard();
+    });
+  });
+
+  setInterval(function() { if (startTime && !finished) updateStats(); }, 200);
+
+  // ---- Init ----
+  buildKeyboard();
+
+  // Register service worker for PWA
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('sw.js').catch(function() {});
+  }
+
+  initText();
+  imeInput.focus();
+</script>
+</body>
+</html>

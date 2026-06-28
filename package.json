@@ -1,0 +1,52 @@
+{
+  "name": "typing-practice",
+  "version": "1.0.0",
+  "description": "打字练习 - 指法训练工具",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "build:mac": "electron-builder --mac",
+    "build:win": "electron-builder --win",
+    "build:all": "electron-builder --mac --win"
+  },
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "electron": "^35.7.5",
+    "electron-builder": "^25.0.0"
+  },
+  "build": {
+    "appId": "com.typing.practice",
+    "productName": "打字练习",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "main.js",
+      "index.html",
+      "manifest.json",
+      "sw.js",
+      "icon-192.png",
+      "icon-512.png"
+    ],
+    "mac": {
+      "category": "public.app-category.education",
+      "target": [
+        "dmg"
+      ],
+      "icon": "icon-512.png"
+    },
+    "win": {
+      "target": [
+        "zip"
+      ],
+      "icon": "icon-512.png",
+      "signAndEditExecutable": false,
+      "verifyUpdateCodeSignature": false
+    },
+    "nsis": null
+  },
+  "allowScripts": {
+    "electron@35.7.5": true
+  }
+}

@@ -9,399 +9,160 @@
 <link rel="manifest" href="manifest.json">
 <title>打字练习</title>
 <style>
-  /* ===== CSS Variable Theme System ===== */
   :root {
-    --font: 'SF Mono','Cascadia Code','JetBrains Mono','Consolas',monospace;
-    --radius: 8px;
-    --transition: 0.25s ease;
-    /* fluid desktop sizing: 1366px → 4K */
-    --container-w: clamp(780px, 56vw, 1100px);
-    --text-display-size: clamp(18px, 1.5vw, 26px);
-    --text-display-zh-size: clamp(22px, 1.8vw, 30px);
-    --text-display-finger-size: clamp(22px, 2vw, 32px);
-    --h1-size: clamp(17px, 1.2vw, 22px);
-    --stat-size: clamp(24px, 1.8vw, 32px);
-    --stat-label-size: clamp(10px, 0.7vw, 12px);
-    --mode-btn-size: clamp(12px, 0.85vw, 14px);
-    --kb-key-min-w: clamp(28px, 2.2vw, 38px);
-    --kb-key-h: clamp(30px, 2.4vw, 42px);
-    --kb-key-font: clamp(10px, 0.75vw, 13px);
-    --pad-x: clamp(16px, 1.2vw, 28px);
-    --pad-y: clamp(20px, 1.5vw, 32px);
-    --gap: clamp(16px, 1.2vw, 28px);
-  }
-
-  /* ---------- 10 theme definitions ---------- */
-  /* 1. Dark (default) */
-  [data-theme="dark"] {
     --bg: #0f1117; --surface: #1a1d27; --border: #2a2d3a;
     --text: #e1e4eb; --text-dim: #6b7080; --accent: #60a5fa;
     --correct: #34d399; --error: #f87171; --cursor: #fbbf24;
     --pinky: #a78bfa; --ring: #60a5fa; --middle: #34d399;
     --index: #fbbf24; --thumb: #f87171;
-    --kb-text: #0f1117; --shadow: 0 2px 12px rgba(0,0,0,0.3);
-    --btn-hover: var(--border);
-    --surface-hover: #222636;
+    --radius: 6px;
+    font-family: 'SF Mono','Cascadia Code','JetBrains Mono','Consolas',monospace;
   }
-  /* 2. Light */
-  [data-theme="light"] {
-    --bg: #f5f6fa; --surface: #ffffff; --border: #dde1e8;
-    --text: #1a1d2e; --text-dim: #8b909e; --accent: #3b82f6;
-    --correct: #10b981; --error: #ef4444; --cursor: #f59e0b;
-    --pinky: #8b5cf6; --ring: #3b82f6; --middle: #10b981;
-    --index: #f59e0b; --thumb: #ef4444;
-    --kb-text: #ffffff; --shadow: 0 2px 12px rgba(0,0,0,0.06);
-    --btn-hover: #eef0f6;
-    --surface-hover: #f8f9fc;
-  }
-  /* 3. Forest Green */
-  [data-theme="forest"] {
-    --bg: #0d1f14; --surface: #152a1e; --border: #234530;
-    --text: #d4e8d8; --text-dim: #5a8a6a; --accent: #4ade80;
-    --correct: #34d399; --error: #f87171; --cursor: #fbbf24;
-    --pinky: #a78bfa; --ring: #4ade80; --middle: #34d399;
-    --index: #fbbf24; --thumb: #f87171;
-    --kb-text: #0d1f14; --shadow: 0 2px 12px rgba(0,0,0,0.4);
-    --btn-hover: #234530;
-    --surface-hover: #1a3024;
-  }
-  /* 4. Ocean Blue */
-  [data-theme="ocean"] {
-    --bg: #0a1628; --surface: #141f3a; --border: #1e3058;
-    --text: #c8daf8; --text-dim: #4a6a9a; --accent: #38bdf8;
-    --correct: #34d399; --error: #f87171; --cursor: #fbbf24;
-    --pinky: #c084fc; --ring: #38bdf8; --middle: #34d399;
-    --index: #fbbf24; --thumb: #f87171;
-    --kb-text: #0a1628; --shadow: 0 2px 12px rgba(0,30,60,0.5);
-    --btn-hover: #1e3058;
-    --surface-hover: #182540;
-  }
-  /* 5. Sakura Pink (children friendly) */
-  [data-theme="sakura"] {
-    --bg: #1a1218; --surface: #261c24; --border: #3d2a38;
-    --text: #f0dce8; --text-dim: #8a6a80; --accent: #f472b6;
-    --correct: #34d399; --error: #f87171; --cursor: #fbbf24;
-    --pinky: #e879f9; --ring: #f472b6; --middle: #34d399;
-    --index: #fbbf24; --thumb: #f87171;
-    --kb-text: #1a1218; --shadow: 0 2px 12px rgba(80,20,60,0.4);
-    --btn-hover: #3d2a38;
-    --surface-hover: #2c2028;
-  }
-  /* 6. Cyberpunk */
-  [data-theme="cyber"] {
-    --bg: #0a0a0f; --surface: #14141e; --border: #2a0a3a;
-    --text: #d4f0ff; --text-dim: #5a5a8a; --accent: #c084fc;
-    --correct: #00ff88; --error: #ff3366; --cursor: #ffee00;
-    --pinky: #c084fc; --ring: #00ccff; --middle: #00ff88;
-    --index: #ffee00; --thumb: #ff3366;
-    --kb-text: #0a0a0f; --shadow: 0 0 20px rgba(192,132,252,0.15);
-    --btn-hover: #2a0a3a;
-    --surface-hover: #1a0a2a;
-  }
-  /* 7. Minimal Gray */
-  [data-theme="gray"] {
-    --bg: #1a1b1e; --surface: #25262b; --border: #373a40;
-    --text: #c1c2c5; --text-dim: #5c5f66; --accent: #909296;
-    --correct: #69db7c; --error: #ff6b6b; --cursor: #ffd43b;
-    --pinky: #b197fc; --ring: #74c0fc; --middle: #69db7c;
-    --index: #ffd43b; --thumb: #ff6b6b;
-    --kb-text: #1a1b1e; --shadow: 0 2px 8px rgba(0,0,0,0.2);
-    --btn-hover: #373a40;
-    --surface-hover: #2c2d32;
-  }
-  /* 8. Sunset */
-  [data-theme="sunset"] {
-    --bg: #1a1012; --surface: #2a1a1c; --border: #4a2830;
-    --text: #f0d8dc; --text-dim: #8a5a64; --accent: #fb923c;
-    --correct: #34d399; --error: #f87171; --cursor: #fbbf24;
-    --pinky: #c084fc; --ring: #fb923c; --middle: #34d399;
-    --index: #fbbf24; --thumb: #f87171;
-    --kb-text: #1a1012; --shadow: 0 2px 12px rgba(60,20,20,0.4);
-    --btn-hover: #4a2830;
-    --surface-hover: #301e22;
-  }
-  /* 9. Mint */
-  [data-theme="mint"] {
-    --bg: #f0faf5; --surface: #ffffff; --border: #c8e6d8;
-    --text: #1a2e26; --text-dim: #6a8a7a; --accent: #0ea574;
-    --correct: #10b981; --error: #ef4444; --cursor: #f59e0b;
-    --pinky: #8b5cf6; --ring: #0ea574; --middle: #10b981;
-    --index: #f59e0b; --thumb: #ef4444;
-    --kb-text: #ffffff; --shadow: 0 2px 12px rgba(0,0,0,0.04);
-    --btn-hover: #d8f0e4;
-    --surface-hover: #f5fdf8;
-  }
-  /* 10. Midnight Purple */
-  [data-theme="midnight"] {
-    --bg: #0f0a1a; --surface: #1a1430; --border: #2a1e4a;
-    --text: #d8d0f0; --text-dim: #6a5a9a; --accent: #a78bfa;
-    --correct: #34d399; --error: #f87171; --cursor: #fbbf24;
-    --pinky: #c084fc; --ring: #818cf8; --middle: #34d399;
-    --index: #fbbf24; --thumb: #f87171;
-    --kb-text: #0f0a1a; --shadow: 0 2px 16px rgba(120,80,200,0.2);
-    --btn-hover: #2a1e4a;
-    --surface-hover: #201840;
-  }
-
-  /* ===== Base Reset & Layout ===== */
   * { margin:0; padding:0; box-sizing:border-box; }
-  html { font-size: 16px; }
   body {
     background:var(--bg); color:var(--text);
-    font-family: var(--font);
     min-height:100vh; display:flex; flex-direction:column;
-    align-items:center;
-    padding: var(--pad-y) var(--pad-x);
-    transition: background var(--transition), color var(--transition);
+    align-items:center; padding:30px 20px 80px;
   }
-
-  /* ===== Theme Switcher (top-right) ===== */
-  .theme-bar {
-    position: fixed; top: 12px; right: 16px; z-index: 100;
-    display: flex; align-items: center; gap: 8px;
-  }
-  .theme-label {
-    font-size: 11px; color: var(--text-dim); letter-spacing: 0.5px;
-    text-transform: uppercase;
-  }
-  .theme-select {
-    appearance: none; -webkit-appearance: none;
-    background: var(--surface); color: var(--text);
-    border: 1px solid var(--border); border-radius: var(--radius);
-    padding: 5px 28px 5px 10px;
-    font-size: 12px; font-family: var(--font); cursor: pointer;
-    transition: border-color var(--transition), background var(--transition);
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%236b7080'/%3E%3C/svg%3E");
-    background-repeat: no-repeat; background-position: right 8px center;
-  }
-  .theme-select:hover { border-color: var(--accent); }
-  .theme-select:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent); }
-  .theme-select option {
-    background: var(--surface); color: var(--text);
-  }
-
-  .container { width: 100%; max-width: var(--container-w); }
-
-  header {
-    display: flex; align-items: center; justify-content: space-between;
-    margin-bottom: var(--gap);
-    flex-wrap: wrap; gap: 12px;
-  }
-  h1 { font-size: var(--h1-size); font-weight: 600; letter-spacing: -0.3px; }
-  .stats { display: flex; gap: var(--gap); }
-  .stat { text-align: center; }
-  .stat-value {
-    font-size: var(--stat-size); font-weight: 600;
-    color: var(--accent); font-variant-numeric: tabular-nums;
-  }
-  .stat-label {
-    font-size: var(--stat-label-size); color: var(--text-dim);
-    text-transform: uppercase; letter-spacing: 0.8px;
-  }
+  .container { width:100%; max-width:780px; }
+  header { display:flex; align-items:center; justify-content:space-between; margin-bottom:24px; }
+  h1 { font-size:18px; font-weight:600; letter-spacing:-0.3px; }
+  .stats { display:flex; gap:24px; }
+  .stat { text-align:center; }
+  .stat-value { font-size:26px; font-weight:600; color:var(--accent); font-variant-numeric:tabular-nums; }
+  .stat-label { font-size:11px; color:var(--text-dim); text-transform:uppercase; letter-spacing:0.8px; }
 
   /* Mode tabs */
-  .mode-bar {
-    display: flex; gap: 4px; margin-bottom: var(--gap);
-    background: var(--surface); border-radius: var(--radius); padding: 3px;
-    transition: background var(--transition);
-  }
-  .mode-btn {
-    flex: 1; padding: 8px 4px; border: none; background: transparent;
-    color: var(--text-dim); font-size: var(--mode-btn-size);
-    border-radius: calc(var(--radius) - 2px); cursor: pointer;
-    transition: background .15s, color .15s; font-family: inherit;
-    white-space: nowrap;
-  }
-  .mode-btn:hover { color: var(--text); }
-  .mode-btn.active { background: var(--btn-hover); color: var(--text); }
+  .mode-bar { display:flex; gap:4px; margin-bottom:24px; background:var(--surface); border-radius:var(--radius); padding:3px; }
+  .mode-btn { flex:1; padding:8px 4px; border:none; background:transparent; color:var(--text-dim); font-size:13px; border-radius:calc(var(--radius) - 2px); cursor:pointer; transition:background .15s,color .15s; font-family:inherit; }
+  .mode-btn:hover { color:var(--text); }
+  .mode-btn.active { background:var(--border); color:var(--text); }
 
   /* Finger selector */
   .finger-selector {
-    display:none; gap: clamp(4px, 0.4vw, 8px); margin-bottom: var(--gap);
-    flex-wrap: wrap; justify-content: center;
+    display:none; gap:6px; margin-bottom:20px; flex-wrap:wrap; justify-content:center;
   }
-  .finger-selector.visible { display: flex; }
+  .finger-selector.visible { display:flex; }
   .finger-btn {
-    display: flex; flex-direction: column; align-items: center;
-    gap: 4px; padding: 8px clamp(10px, 1vw, 16px);
-    border: 1px solid var(--border); border-radius: var(--radius);
-    background: var(--surface); color: var(--text-dim);
-    font-size: clamp(10px, 0.75vw, 12px);
-    cursor: pointer; transition: all .15s; font-family: inherit;
-    min-width: clamp(52px, 4vw, 66px);
+    display:flex; flex-direction:column; align-items:center; gap:4px;
+    padding:8px 14px; border:1px solid var(--border); border-radius:var(--radius);
+    background:var(--surface); color:var(--text-dim); font-size:11px;
+    cursor:pointer; transition:all .15s; font-family:inherit; min-width:60px;
   }
-  .finger-btn:hover { color: var(--text); border-color: var(--accent); }
-  .finger-btn.active { color: var(--text); border-color: transparent; }
-  .finger-btn .finger-icon { font-size: clamp(16px, 1.2vw, 20px); }
+  .finger-btn:hover { color:var(--text); border-color:var(--accent); }
+  .finger-btn.active { color:var(--text); border-color:transparent; }
+  .finger-btn .finger-icon { font-size:18px; }
   .finger-btn.pinky { --fc: var(--pinky); }
   .finger-btn.ring { --fc: var(--ring); }
   .finger-btn.middle { --fc: var(--middle); }
   .finger-btn.index { --fc: var(--index); }
   .finger-btn.thumb { --fc: var(--thumb); }
-  .finger-btn.active.pinky { background:var(--pinky); color:var(--kb-text); }
-  .finger-btn.active.ring { background:var(--ring); color:var(--kb-text); }
-  .finger-btn.active.middle { background:var(--middle); color:var(--kb-text); }
-  .finger-btn.active.index { background:var(--index); color:var(--kb-text); }
-  .finger-btn.active.thumb { background:var(--thumb); color:var(--kb-text); }
+  .finger-btn.active.pinky { background:var(--pinky); color:#0f1117; }
+  .finger-btn.active.ring { background:var(--ring); color:#0f1117; }
+  .finger-btn.active.middle { background:var(--middle); color:#0f1117; }
+  .finger-btn.active.index { background:var(--index); color:#0f1117; }
+  .finger-btn.active.thumb { background:var(--thumb); color:#0f1117; }
 
   .hand-label {
-    font-size: clamp(10px, 0.7vw, 12px); color: var(--text-dim);
-    text-align: center; margin-bottom: 6px; letter-spacing: 0.5px;
+    font-size:11px; color:var(--text-dim); text-align:center;
+    margin-bottom:6px; letter-spacing:0.5px;
   }
-  .finger-group { display: flex; gap: clamp(4px, 0.4vw, 8px); justify-content: center; }
+
+  .finger-group {
+    display:flex; gap:6px; justify-content:center;
+  }
+
   .hand-section {
-    display: flex; flex-direction: column; gap: 6px;
-    padding: 8px clamp(8px, 0.8vw, 14px);
-    background: var(--surface); border-radius: var(--radius);
-    border: 1px solid var(--border);
-    transition: background var(--transition), border-color var(--transition);
+    display:flex; flex-direction:column; gap:6px;
+    padding:8px 12px; background:var(--surface); border-radius:var(--radius);
+    border:1px solid var(--border);
   }
 
   .text-display {
-    background: var(--surface); border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: clamp(18px, 1.5vw, 32px) clamp(18px, 1.5vw, 36px);
-    font-size: var(--text-display-size); line-height: 1.8;
-    letter-spacing: 0.3px; min-height: clamp(120px, 12vw, 180px);
-    cursor: text; position: relative; user-select: none;
-    overflow-wrap: break-word; tab-size: 2;
-    transition: background var(--transition), border-color var(--transition);
+    background:var(--surface); border:1px solid var(--border);
+    border-radius:var(--radius); padding:24px 28px;
+    font-size:20px; line-height:1.8; letter-spacing:0.3px;
+    min-height:140px; cursor:text; position:relative;
+    user-select:none; overflow-wrap:break-word; tab-size:2;
   }
-  .text-display.zh { font-size: var(--text-display-zh-size); line-height: 2.4; letter-spacing: 3px; }
-  .text-display.finger-mode { font-size: var(--text-display-finger-size); letter-spacing: 4px; text-align: center; }
-  .text-display.focused { border-color: var(--accent); }
+  .text-display.zh { font-size:24px; line-height:2.4; letter-spacing:3px; }
+  .text-display.finger-mode { font-size:26px; letter-spacing:4px; text-align:center; }
+  .text-display.focused { border-color:var(--accent); }
 
   .ime-capture {
-    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-    opacity: 0; resize: none; border: none; outline: none;
-    background: transparent; font-size: 20px;
-    caret-color: transparent; z-index: 2;
+    position:absolute; top:0; left:0; width:100%; height:100%;
+    opacity:0; resize:none; border:none; outline:none;
+    background:transparent; font-size:20px;
+    caret-color:transparent; z-index:2;
   }
 
-  .char { position: relative; transition: color .08s; }
-  .char.untyped { color: var(--text-dim); }
-  .char.correct { color: var(--correct); }
-  .char.incorrect { color: var(--error); }
+  .char { position:relative; transition:color .08s; }
+  .char.untyped { color:var(--text-dim); }
+  .char.correct { color:var(--correct); }
+  .char.incorrect { color:var(--error); }
   .char.cursor::after {
-    content: ''; position: absolute; left: 0; bottom: -2px;
-    width: 100%; height: 2px; background: var(--cursor);
-    animation: blink 1s step-end infinite;
+    content:''; position:absolute; left:0; bottom:-2px;
+    width:100%; height:2px; background:var(--cursor);
+    animation:blink 1s step-end infinite;
   }
-  @keyframes blink { 0%,100%{opacity:1;} 50%{opacity:0;} }
-  .placeholder { color: var(--text-dim); font-style: italic; }
+  @keyframes blink { 0%,100% { opacity:1; } 50% { opacity:0; } }
+  .placeholder { color:var(--text-dim); font-style:italic; }
+  .result { margin-top:16px; text-align:center; color:var(--text-dim); font-size:14px; min-height:24px; }
+  .reset-btn { margin-top:12px; padding:10px 24px; border:1px solid var(--border); border-radius:var(--radius); background:var(--surface); color:var(--text); font-size:13px; cursor:pointer; font-family:inherit; transition:background .15s; }
+  .reset-btn:hover { background:var(--border); }
+  .error-flash { animation:flash .3s; }
+  @keyframes flash { 0%,100% { background:transparent; } 50% { background:rgba(248,113,113,0.08); } }
+  .hint { color:var(--text-dim); font-size:12px; margin-top:12px; text-align:center; }
 
-  .result {
-    margin-top: clamp(12px, 1vw, 20px); text-align: center;
-    color: var(--text-dim); font-size: clamp(13px, 0.9vw, 15px);
-    min-height: 24px;
-  }
-  .reset-btn {
-    margin-top: 12px; padding: 10px 24px;
-    border: 1px solid var(--border); border-radius: var(--radius);
-    background: var(--surface); color: var(--text);
-    font-size: clamp(12px, 0.85vw, 14px); cursor: pointer;
-    font-family: inherit; transition: background .15s, border-color var(--transition);
-  }
-  .reset-btn:hover { background: var(--btn-hover); }
-  .error-flash { animation: flash .3s; }
-  @keyframes flash { 0%,100%{background:transparent;} 50%{background:rgba(248,113,113,0.08);} }
-  .hint {
-    color: var(--text-dim); font-size: clamp(11px, 0.75vw, 13px);
-    margin-top: 12px; text-align: center;
-  }
-
-  /* ===== Keyboard ===== */
-  .keyboard-section { margin-top: var(--gap); }
-  .kb-toggle-row { text-align: center; margin-top: 14px; }
-  .keyboard-toggle {
-    display: inline-flex; align-items: center; gap: 6px;
-    padding: 6px 12px; border: 1px solid var(--border);
-    border-radius: var(--radius); background: var(--surface);
-    color: var(--text-dim); font-size: clamp(11px, 0.75vw, 13px);
-    cursor: pointer; font-family: inherit;
-    transition: color .15s, border-color .15s, background var(--transition);
-  }
-  .keyboard-toggle:hover { color: var(--text); border-color: var(--accent); }
-  .keyboard {
-    margin-top: 16px; display: flex; flex-direction: column;
-    gap: clamp(3px, 0.2vw, 5px);
-    padding: clamp(12px, 1vw, 20px) clamp(8px, 0.6vw, 14px);
-    background: var(--surface); border: 1px solid var(--border);
-    border-radius: var(--radius); overflow-x: auto;
-    transition: background var(--transition), border-color var(--transition);
-  }
-  .keyboard.hidden-kb { display: none; }
-  .kb-row { display: flex; gap: clamp(2px, 0.15vw, 4px); justify-content: center; }
-  .kb-key {
-    min-width: var(--kb-key-min-w); height: var(--kb-key-h);
-    border-radius: 4px; display: flex; align-items: center;
-    justify-content: center; font-size: var(--kb-key-font);
-    font-weight: 600; color: var(--kb-text); white-space: nowrap;
-    padding: 0 clamp(2px, 0.2vw, 5px); transition: all .15s;
-  }
-  .kb-key.wide { min-width: calc(var(--kb-key-min-w) * 1.5); }
-  .kb-key.wider { min-width: calc(var(--kb-key-min-w) * 2); }
-  .kb-key.widest { min-width: calc(var(--kb-key-min-w) * 2.8); }
-  .kb-key.pinky-left { background:var(--pinky); } .kb-key.ring-left { background:var(--ring); }
-  .kb-key.middle-left { background:var(--middle); } .kb-key.index-left { background:var(--index); }
+  /* Full keyboard */
+  .keyboard-section { margin-top:24px; }
+  .kb-toggle-row { text-align:center; margin-top:14px; }
+  .keyboard-toggle { display:inline-flex; align-items:center; gap:6px; padding:6px 12px; border:1px solid var(--border); border-radius:var(--radius); background:var(--surface); color:var(--text-dim); font-size:12px; cursor:pointer; font-family:inherit; transition:color .15s,border-color .15s; }
+  .keyboard-toggle:hover { color:var(--text); border-color:var(--accent); }
+  .keyboard { margin-top:16px; display:flex; flex-direction:column; gap:4px; padding:18px 10px; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); overflow-x:auto; }
+  .keyboard.hidden-kb { display:none; }
+  .kb-row { display:flex; gap:3px; justify-content:center; }
+  .kb-key { min-width:32px; height:36px; border-radius:4px; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:600; color:#0f1117; white-space:nowrap; padding:0 4px; transition:all .15s; }
+  .kb-key.wide { min-width:50px; }
+  .kb-key.wider { min-width:66px; }
+  .kb-key.widest { min-width:90px; }
+  .kb-key.pinky-left { background:var(--pinky); }
+  .kb-key.ring-left { background:var(--ring); }
+  .kb-key.middle-left { background:var(--middle); }
+  .kb-key.index-left { background:var(--index); }
   .kb-key.thumb-left { background:var(--thumb); opacity:0.7; }
-  .kb-key.index-right { background:var(--index); } .kb-key.middle-right { background:var(--middle); }
-  .kb-key.ring-right { background:var(--ring); } .kb-key.pinky-right { background:var(--pinky); }
+  .kb-key.index-right { background:var(--index); }
+  .kb-key.middle-right { background:var(--middle); }
+  .kb-key.ring-right { background:var(--ring); }
+  .kb-key.pinky-right { background:var(--pinky); }
   .kb-key.thumb-right { background:var(--thumb); opacity:0.7; }
-  .kb-key.dimmed { opacity: 0.15; }
-  .kb-key.highlighted { opacity: 1; transform: scale(1.08); z-index: 1; position: relative; }
 
-  .kb-legend {
-    display: flex; gap: clamp(10px, 0.8vw, 18px); justify-content: center;
-    margin-top: 12px; font-size: clamp(10px, 0.7vw, 12px);
-    color: var(--text-dim); flex-wrap: wrap;
-  }
-  .kb-legend span {
-    display: flex; align-items: center; gap: 5px; cursor: pointer;
-    padding: 2px 6px; border-radius: 3px; transition: background .15s;
-  }
-  .kb-legend span:hover { background: var(--btn-hover); }
-  .kb-legend span.selected { background: var(--btn-hover); color: var(--text); }
-  .kb-dot { width: clamp(8px, 0.6vw, 11px); height: clamp(8px, 0.6vw, 11px); border-radius: 2px; }
-  .kb-dot.pinky { background:var(--pinky); } .kb-dot.ring { background:var(--ring); }
-  .kb-dot.middle { background:var(--middle); } .kb-dot.index { background:var(--index); }
+  /* Dim non-target keys when a finger is selected */
+  .kb-key.dimmed { opacity:0.15; }
+  .kb-key.highlighted { opacity:1; transform:scale(1.08); z-index:1; position:relative; }
+
+  .kb-legend { display:flex; gap:16px; justify-content:center; margin-top:12px; font-size:11px; color:var(--text-dim); flex-wrap:wrap; }
+  .kb-legend span { display:flex; align-items:center; gap:5px; cursor:pointer; padding:2px 6px; border-radius:3px; transition:background .15s; }
+  .kb-legend span:hover { background:var(--border); }
+  .kb-legend span.selected { background:var(--border); color:var(--text); }
+  .kb-dot { width:10px; height:10px; border-radius:2px; }
+  .kb-dot.pinky { background:var(--pinky); }
+  .kb-dot.ring { background:var(--ring); }
+  .kb-dot.middle { background:var(--middle); }
+  .kb-dot.index { background:var(--index); }
   .kb-dot.thumb { background:var(--thumb); opacity:0.7; }
-  .kb-divider { color: var(--border); margin: 0 6px; }
-  .os-toggle-row { text-align: center; margin-top: 8px; }
-  .os-toggle { display: inline-flex; gap: 4px; background: var(--surface); border-radius: var(--radius); padding: 3px; }
-  .os-toggle-btn {
-    padding: 4px 12px; border: none; background: transparent;
-    color: var(--text-dim); font-size: 11px;
-    border-radius: calc(var(--radius) - 2px); cursor: pointer;
-    font-family: inherit; transition: all .15s;
-  }
-  .os-toggle-btn:hover { color: var(--text); }
-  .os-toggle-btn.active { background: var(--btn-hover); color: var(--text); }
+  .kb-divider { color:var(--border); margin:0 6px; }
+  .os-toggle-row { text-align:center; margin-top:8px; }
+  .os-toggle { display:inline-flex; gap:4px; background:var(--surface); border-radius:var(--radius); padding:3px; }
+  .os-toggle-btn { padding:4px 12px; border:none; background:transparent; color:var(--text-dim); font-size:11px; border-radius:calc(var(--radius) - 2px); cursor:pointer; font-family:inherit; transition:all .15s; }
+  .os-toggle-btn:hover { color:var(--text); }
+  .os-toggle-btn.active { background:var(--border); color:var(--text); }
 </style>
 </head>
-<body data-theme="dark">
-
-<!-- ===== Theme Switcher ===== -->
-<div class="theme-bar">
-  <span class="theme-label">🎨 皮肤</span>
-  <select class="theme-select" id="themeSelect">
-    <option value="auto">⏰ 自动</option>
-    <option value="dark" selected>🌙 深色</option>
-    <option value="light">☀️ 浅色</option>
-    <option value="forest">🌿 森林绿</option>
-    <option value="ocean">🌊 海洋蓝</option>
-    <option value="sakura">🌸 樱花粉</option>
-    <option value="cyber">⚡ 赛博朋克</option>
-    <option value="gray">🪨 极简灰</option>
-    <option value="sunset">🌅 日落</option>
-    <option value="mint">🍃 薄荷</option>
-    <option value="midnight">🌌 午夜紫</option>
-  </select>
-</div>
-
+<body>
 <div class="container">
   <header>
-    <h1>⌨ 打字练习</h1>
+    <h1>打字练习</h1>
     <div class="stats">
       <div class="stat"><div class="stat-value" id="wpm">0</div><div class="stat-label">字/分</div></div>
       <div class="stat"><div class="stat-value" id="accuracy">-</div><div class="stat-label">准确率</div></div>
@@ -1004,67 +765,14 @@
 
   // ---- Init ----
   buildKeyboard();
+
+  // Register service worker for PWA
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('sw.js').catch(function() {});
+  }
+
   initText();
   imeInput.focus();
-
-  // =========================================================
-  //  THEME SYSTEM
-  // =========================================================
-  var themeSelect = document.getElementById('themeSelect');
-  var autoInterval = null;
-
-  // Determine dark/light by local time
-  function timeTheme() {
-    var h = new Date().getHours();
-    return (h >= 6 && h < 18) ? 'light' : 'dark';
-  }
-
-  // Apply theme to document
-  function applyTheme(name) {
-    if (name === 'auto') {
-      document.body.setAttribute('data-theme', timeTheme());
-    } else {
-      document.body.setAttribute('data-theme', name);
-    }
-  }
-
-  // Save preference
-  function saveTheme(name) {
-    try { localStorage.setItem('typing-theme', name); } catch(e) {}
-  }
-
-  // Load preference
-  function loadTheme() {
-    try { return localStorage.getItem('typing-theme') || 'auto'; } catch(e) { return 'auto'; }
-  }
-
-  // Refresh auto theme every minute
-  function startAutoRefresh() {
-    if (autoInterval) clearInterval(autoInterval);
-    var theme = loadTheme();
-    if (theme === 'auto') {
-      autoInterval = setInterval(function() {
-        applyTheme('auto');
-      }, 60000);
-    }
-  }
-
-  // Theme switch handler
-  themeSelect.addEventListener('change', function() {
-    var val = themeSelect.value;
-    saveTheme(val);
-    applyTheme(val);
-    if (autoInterval) clearInterval(autoInterval);
-    if (val === 'auto') startAutoRefresh();
-  });
-
-  // Init theme on load
-  (function initTheme() {
-    var saved = loadTheme();
-    themeSelect.value = saved;
-    applyTheme(saved);
-    if (saved === 'auto') startAutoRefresh();
-  })();
 </script>
 </body>
 </html>

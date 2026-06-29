@@ -30,7 +30,6 @@ function createWindow() {
     title: '打字练习',
     backgroundColor: '#0f1117',
     webPreferences: {
-      sandbox: true,
       nodeIntegration: false,
       contextIsolation: true,
       webSecurity: true,

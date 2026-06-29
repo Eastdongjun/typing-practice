@@ -1,14 +1,19 @@
-const { app, BrowserWindow, Menu, globalShortcut } = require('electron');
+const { app, BrowserWindow, Menu, screen } = require('electron');
 const path = require('path');
 
 let mainWindow;
 
 function createWindow() {
+  const { width: screenW, height: screenH } = screen.getPrimaryDisplay().workAreaSize;
+  const winW = Math.min(1100, Math.round(screenW * 0.75));
+  const winH = Math.min(820, Math.round(screenH * 0.82));
+
   mainWindow = new BrowserWindow({
-    width: 900,
-    height: 720,
-    minWidth: 600,
-    minHeight: 500,
+    width: winW,
+    height: winH,
+    minWidth: 780,
+    minHeight: 560,
+    center: true,
     title: '打字练习',
     backgroundColor: '#0f1117',
     webPreferences: {

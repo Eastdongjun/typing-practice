@@ -1,0 +1,26 @@
+name: Requirements Quality
+
+on:
+  pull_request:
+    paths:
+      - 'docs/requirements/**'
+      - 'CLAUDE.md'
+      - 'PROJECT_CONTEXT.md'
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Run requirements quality check
+        run: python3 scripts/check_requirements.py
+
+      - name: Check git whitespace errors
+        run: git diff --check origin/main...HEAD

@@ -1,51 +1,77 @@
-# ⌨️ 打字练习
+# ⌨️ 打字练习 · Typing Practice
+
+Desktop typing practice tool with finger training, poetry learning, and multi-role support.
 
 桌面端打字练习工具，支持指法训练、古诗文练习、多角色管理。
 
-## ✨ 功能
+---
 
-- **5 种练习模式**：英文词、名言、代码、中文、指法训练
-- **🎨 10 套皮肤**：深色/浅色/森林绿/海洋蓝/樱花粉/赛博朋克/极简灰/日落/薄荷/午夜紫
-- **⏰ 自动主题**：根据系统时间自动切换深色/浅色
-- **🖥️ 桌面自适应**：1366px 笔记本到 4K 大屏流畅适配
-- **⌨️ 指法键盘**：可视化键盘热区，Mac/Windows 布局切换
-- **📊 实时统计**：速度（字/分）、准确率、进度
+## ✨ Features · 功能
 
-## 📥 下载安装
+| Feature · 功能 | Description · 描述 |
+|---|---|
+| **5 Practice Modes** | English words, Quotes, Code, Chinese, Finger training |
+| **5 种练习模式** | 英文词、名言、代码、中文、指法训练 |
+| **🎨 10 Skins** | Dark / Light / Forest / Ocean / Sakura / Cyberpunk / Gray / Sunset / Mint / Midnight |
+| **🎨 10 套皮肤** | 深色 / 浅色 / 森林绿 / 海洋蓝 / 樱花粉 / 赛博朋克 / 极简灰 / 日落 / 薄荷 / 午夜紫 |
+| **⏰ Auto Theme** | Switches dark/light automatically based on system time |
+| **⏰ 自动主题** | 根据系统时间自动切换深色/浅色 |
+| **🖥️ Responsive** | Fluid scaling from 1366px laptops to 4K displays |
+| **🖥️ 桌面自适应** | 1366px 笔记本到 4K 大屏流畅适配 |
+| **⌨️ Finger Keyboard** | Visual heatmap keyboard, Mac/Windows layout toggle |
+| **⌨️ 指法键盘** | 可视化键盘热区，Mac/Windows 布局切换 |
+| **📊 Real-time Stats** | WPM, accuracy, progress |
+| **📊 实时统计** | 速度（字/分）、准确率、进度 |
 
-### Windows（Win10 / Win11 64位）
+---
+
+## 📥 Download · 下载
+
+### Windows (Win10 / Win11, 64-bit)
+
+Download `打字练习 Setup 1.0.0.exe` and double-click to install.
 
 下载 `打字练习 Setup 1.0.0.exe`，双击安装。
 
-### macOS（Apple Silicon）
+### macOS (Apple Silicon)
 
-下载 `打字练习-1.0.0-arm64.dmg`，拖入 Applications。
+Download `打字练习-1.0.0-arm64.dmg` and drag into Applications.
 
-## 🚀 开发
+下载 `打字练习-1.0.0-arm64.dmg`，拖入 Applications 文件夹。
+
+---
+
+## 🚀 Development · 开发
 
 ```bash
 git clone https://github.com/Eastdongjun/typing-practice.git
 cd typing-practice
 npm install
-npm start          # 开发运行
-npm run build:mac  # 构建 macOS
-npm run build:win  # 构建 Windows
+npm start          # Run in dev mode · 开发运行
+npm run build:mac  # Build for macOS · 构建 macOS
+npm run build:win  # Build for Windows · 构建 Windows
 ```
 
-## 🗺️ 路线图
+---
 
-| 阶段 | 内容 |
-|------|------|
-| ✅ Phase 1 | 主题系统 + 桌面响应式适配 |
-| 🔜 Phase 2 | 用户系统（学生/家长/教师角色）+ 古诗文内容 |
-| 🔜 Phase 3 | 家长监控看板 + 统计分析 |
+## 🗺️ Roadmap · 路线图
 
-## 🛠️ 技术栈
+| Phase · 阶段 | Content · 内容 |
+|---|---|
+| ✅ Phase 1 | Theme system + Desktop responsive · 主题系统 + 桌面响应式 |
+| 🔜 Phase 2 | User system (Student/Parent/Teacher roles) + Ancient poetry · 用户系统 + 古诗文 |
+| 🔜 Phase 3 | Parent dashboard + Analytics · 家长监控看板 + 统计分析 |
+
+---
+
+## 🛠️ Tech Stack · 技术栈
 
 - Electron 35
-- 纯 HTML/CSS/JS（无框架依赖）
-- CSS 变量主题系统
-- electron-builder 跨平台打包
+- Vanilla HTML/CSS/JS (zero framework) · 纯 HTML/CSS/JS（无框架）
+- CSS Variable theme system · CSS 变量主题系统
+- electron-builder cross-platform packaging · 跨平台打包
+
+---
 
 ## 📄 License
 

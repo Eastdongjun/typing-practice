@@ -39,7 +39,7 @@
       "target": [
         "nsis"
       ],
-      "icon": "icon-512.png",
+      "icon": "icon.ico",
       "signAndEditExecutable": false,
       "verifyUpdateCodeSignature": false
     },
@@ -47,9 +47,9 @@
       "oneClick": false,
       "perMachine": false,
       "allowToChangeInstallationDirectory": true,
-      "installerIcon": "icon-512.png",
-      "uninstallerIcon": "icon-512.png",
-      "installerHeaderIcon": "icon-512.png",
+      "installerIcon": "icon.ico",
+      "uninstallerIcon": "icon.ico",
+      "installerHeaderIcon": "icon.ico",
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
       "shortcutName": "打字练习"

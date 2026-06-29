@@ -27,17 +27,15 @@ Desktop typing practice tool with finger training, poetry learning, and multi-ro
 
 ## 📥 Download · 下载
 
-### Windows (Win10 / Win11, 64-bit)
+> **👉 [Latest Release · 最新版下载](https://github.com/Eastdongjun/typing-practice/releases/latest)**
 
-Download `打字练习 Setup 1.0.0.exe` and double-click to install.
+| Platform · 平台 | Architecture · 架构 | File · 文件 |
+|---|---|---|
+| 🍎 macOS | Apple Silicon (M1-M4) | `TypingPractice-*-AppleSilicon-arm64.dmg` |
+| 🍎 macOS | Intel (x64) | `TypingPractice-*-Intel-x64.dmg` |
+| 🪟 Windows | x64 (Win10 / Win11) | `TypingPractice-*-Windows-x64-Setup.exe` |
 
-下载 `打字练习 Setup 1.0.0.exe`，双击安装。
-
-### macOS (Apple Silicon)
-
-Download `打字练习-1.0.0-arm64.dmg` and drag into Applications.
-
-下载 `打字练习-1.0.0-arm64.dmg`，拖入 Applications 文件夹。
+> ⚠️ Windows 32-bit (x86) is not supported — Electron no longer provides 32-bit binaries.
 
 ---
 

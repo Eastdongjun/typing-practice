@@ -215,18 +215,6 @@
   .mode-btn:hover { color: var(--text); }
   .mode-btn.active { background: var(--btn-hover); color: var(--text); }
 
-  /* Sub-mode bar */
-  .submode-bar {
-    display:flex; gap:4px; margin-bottom:var(--gap); flex-wrap:wrap; justify-content:center;
-  }
-  .submode-btn {
-    padding:5px 14px; border:1px solid var(--border); border-radius:var(--radius);
-    background:transparent; color:var(--text-dim); font-size:clamp(11px,0.75vw,13px);
-    cursor:pointer; font-family:inherit; transition:all .15s;
-  }
-  .submode-btn:hover { color:var(--text); border-color:var(--accent); }
-  .submode-btn.active { background:var(--accent); color:var(--kb-text); border-color:var(--accent); }
-
   /* Finger selector */
   .finger-selector {
     display:none; gap: clamp(4px, 0.4vw, 8px); margin-bottom: var(--gap);
@@ -421,17 +409,12 @@
     </div>
   </header>
 
-  <!-- 四大板块主选项卡 -->
   <div class="mode-bar">
-    <button class="mode-btn active" data-category="english">英文</button>
-    <button class="mode-btn" data-category="code">代码</button>
-    <button class="mode-btn" data-category="chinese">中文</button>
-    <button class="mode-btn" data-category="finger">指法训练</button>
-  </div>
-  <!-- 子模块（根据当前板块动态显示） -->
-  <div class="submode-bar" id="submodeBar">
-    <button class="submode-btn active" data-mode="words">词汇</button>
-    <button class="submode-btn" data-mode="quotes">名言</button>
+    <button class="mode-btn active" data-mode="words">英文词</button>
+    <button class="mode-btn" data-mode="quotes">名言</button>
+    <button class="mode-btn" data-mode="code">代码</button>
+    <button class="mode-btn" data-mode="chinese">中文</button>
+    <button class="mode-btn" data-mode="finger">指法训练</button>
   </div>
 
   <!-- Finger selector (shown only in finger mode) -->
@@ -630,14 +613,10 @@
 
   // ---- Word sets ----
   var wordSets = {
-    // ── 英文板块 ──
     words: [
-      "the and you that this with from have been they will what when make like just some them your can say each how now then also more want most good look take time work need give know come only even much into well such back your life part same name year hand keep open play help find must kind love free show home away long hard ever down full side here very",
-      "please think always people change number before between because enough really little system back country under always another better against through world around however something thought before company different problem public friend himself",
-      "practice makes perfect nothing is impossible believe in yourself every moment counts the only way to do great work is to love what you do stay hungry stay foolish",
-      "computer software hardware network server database algorithm interface application browser program developer engineer technology digital internet system platform framework module function variable constant object array",
-      "business management strategy analysis development marketing finance accounting operations customer product service solution project budget revenue profit investment organization leadership communication",
-      "research theory hypothesis experiment evidence conclusion analysis method approach context concept framework perspective significant demonstrate establish identify determine evaluate assess investigate examine explore"
+      "the and you that this with from have been they will what when make like just some them your can say each how now then also more want most good look take time work need give know come only even much into well such back your life part same name year hand keep open play help find must kind love free show home away long hard ever down full side here very made sign moon line rain look dark cool warm plan tree walk rose bird soul deep slow fall wide ring rule fire path",
+      "please think always people change number before between because enough really little system back people country under always another better against through world around however something thought before company different problem public friend himself",
+      "practice makes perfect nothing is impossible believe in yourself every moment counts the only way to do great work is to love what you do stay hungry stay foolish life is what happens when you are busy making other plans"
     ],
     quotes: [
       "The only way to do great work is to love what you do. - Steve Jobs",
@@ -654,52 +633,20 @@
       "Do what you can, with what you have, where you are. - Theodore Roosevelt",
       "Creativity is intelligence having fun. - Albert Einstein",
       "Less, but better. - Dieter Rams",
-      "Make it work, make it right, make it fast. - Kent Beck",
-      "Any fool can write code that a computer can understand. Good programmers write code that humans can understand. - Martin Fowler",
-      "The best way to predict the future is to invent it. - Alan Kay",
-      "Simplicity is prerequisite for reliability. - Edsger Dijkstra"
+      "Make it work, make it right, make it fast. - Kent Beck"
     ],
-    // ── 代码板块 ──
-    code_js: [
+    code: [
       "const greeting = 'hello world';\nconsole.log(greeting);",
       "function add(a, b) {\n  return a + b;\n}\n\nconst sum = add(3, 5);",
       "const items = ['apple','banana','cherry'];\nitems.forEach(item => {\n  console.log(item);\n});",
+      "import React from 'react';\n\nfunction App() {\n  return (\n    <div className='app'>\n      <h1>Hello</h1>\n    </div>\n  );\n}",
       "const user = {\n  name: 'Alice',\n  age: 28,\n  email: 'alice@example.com',\n};\n\nconsole.log(user.name);",
       "async function fetchData(url) {\n  const res = await fetch(url);\n  if (!res.ok) throw new Error('Failed');\n  return res.json();\n}",
       "const doubled = numbers.map(n => n * 2);\nconst filtered = doubled.filter(n => n > 10);\nconst sum = filtered.reduce((a,b) => a + b, 0);",
       "function fibonacci(n) {\n  if (n <= 1) return n;\n  return fibonacci(n-1) + fibonacci(n-2);\n}",
-      "const [count, setCount] = useState(0);\nuseEffect(() => {\n  document.title = `Clicked ${count} times`;\n}, [count]);",
-      "class EventEmitter {\n  constructor() {\n    this.events = {};\n  }\n  on(event, fn) {\n    (this.events[event] ||= []).push(fn);\n  }\n  emit(event, ...args) {\n    (this.events[event] || []).forEach(fn => fn(...args));\n  }\n}"
-    ],
-    code_py: [
       "def greet(name):\n    return f'Hello, {name}!'\n\nprint(greet('World'))",
-      "from typing import List, Optional\n\ndef binary_search(arr: List[int], target: int) -> Optional[int]:\n    left, right = 0, len(arr) - 1\n    while left <= right:\n        mid = (left + right) // 2\n        if arr[mid] == target:\n            return mid\n        elif arr[mid] < target:\n            left = mid + 1\n        else:\n            right = mid - 1\n    return None",
-      "class TreeNode:\n    def __init__(self, val=0):\n        self.val = val\n        self.left = None\n        self.right = None\n\ndef inorder(root: TreeNode) -> List[int]:\n    if not root:\n        return []\n    return inorder(root.left) + [root.val] + inorder(root.right)",
-      "from dataclasses import dataclass\nfrom typing import Optional\n\n@dataclass\nclass User:\n    id: int\n    name: str\n    email: str\n    role: str = 'user'\n\ndef get_user(user_id: int) -> Optional[User]:\n    users = {1: User(1, 'Alice', 'a@x.com')}\n    return users.get(user_id)",
-      "import re\nfrom collections import Counter\n\ndef word_count(text: str) -> Counter:\n    words = re.findall(r'\\b\\w+\\b', text.lower())\n    return Counter(words)",
-      "def fibonacci(n: int) -> int:\n    a, b = 0, 1\n    for _ in range(n):\n        a, b = b, a + b\n    return a\n\nprint([fibonacci(i) for i in range(10)])"
+      "type Props = {\n  title: string;\n  count: number;\n};\n\nconst Card = ({title,count}: Props) => (\n  <div>{title}: {count}</div>\n);"
     ],
-    code_ts: [
-      "type Props = {\n  title: string;\n  count: number;\n};\n\nconst Card = ({title, count}: Props) => (\n  <div>\n    <h2>{title}</h2>\n    <span>{count}</span>\n  </div>\n);",
-      "interface User {\n  id: number;\n  name: string;\n  email: string;\n  role: 'admin' | 'user';\n  createdAt: Date;\n}\n\nasync function getUser(id: number): Promise<User> {\n  const res = await fetch(`/api/users/${id}`);\n  if (!res.ok) throw new Error(`User ${id} not found`);\n  return res.json();\n}",
-      "type Result<T, E = Error> =\n  | { ok: true; value: T }\n  | { ok: false; error: E };\n\nfunction safeDivide(a: number, b: number): Result<number> {\n  if (b === 0) return { ok: false, error: new Error('Cannot divide by zero') };\n  return { ok: true, value: a / b };\n}",
-      "enum Status {\n  Draft = 'draft',\n  Published = 'published',\n  Archived = 'archived',\n}\n\ninterface Article {\n  id: string;\n  title: string;\n  status: Status;\n  tags: string[];\n}\n\nconst filterPublished = (articles: Article[]): Article[] =>\n  articles.filter(a => a.status === Status.Published);"
-    ],
-    code_sql: [
-      "SELECT id, name, email FROM users WHERE status = 'active' ORDER BY created_at DESC LIMIT 20;",
-      "SELECT u.name, o.total\nFROM users u\nINNER JOIN orders o ON u.id = o.user_id\nWHERE o.created_at >= '2026-01-01'\nORDER BY o.total DESC;",
-      "SELECT department, COUNT(*) AS total, AVG(salary) AS avg_salary\nFROM employees\nGROUP BY department\nHAVING COUNT(*) > 5\nORDER BY avg_salary DESC;",
-      "SELECT * FROM products\nWHERE price BETWEEN 100 AND 500\nAND category IN ('electronics', 'computers')\nAND name LIKE '%pro%';",
-      "INSERT INTO orders (user_id, product_id, quantity, total)\nVALUES (42, 108, 3, 299.97)\nON CONFLICT (id) DO UPDATE\nSET quantity = EXCLUDED.quantity;",
-      "UPDATE users\nSET last_login = NOW(), login_count = login_count + 1\nWHERE id = 42\nRETURNING id, name, last_login;",
-      "DELETE FROM sessions\nWHERE expires_at < NOW() - INTERVAL '7 days';",
-      "CREATE TABLE articles (\n  id SERIAL PRIMARY KEY,\n  title VARCHAR(255) NOT NULL,\n  content TEXT,\n  author_id INT REFERENCES users(id),\n  published_at TIMESTAMPTZ DEFAULT NOW(),\n  status VARCHAR(20) DEFAULT 'draft'\n);",
-      "SELECT\n  p.name AS product,\n  COUNT(o.id) AS order_count,\n  SUM(o.quantity) AS total_sold\nFROM products p\nLEFT JOIN orders o ON p.id = o.product_id\nGROUP BY p.id, p.name\nORDER BY total_sold DESC\nLIMIT 10;",
-      "WITH monthly_sales AS (\n  SELECT\n    DATE_TRUNC('month', created_at) AS month,\n    SUM(total) AS revenue\n  FROM orders\n  GROUP BY 1\n)\nSELECT month, revenue,\n  LAG(revenue) OVER (ORDER BY month) AS prev_revenue,\n  ROUND((revenue - LAG(revenue) OVER (ORDER BY month))\n    * 100.0 / NULLIF(LAG(revenue) OVER (ORDER BY month), 0), 1) AS growth_pct\nFROM monthly_sales\nORDER BY month;",
-      "EXPLAIN ANALYZE\nSELECT u.name, COUNT(p.id) AS post_count\nFROM users u\nLEFT JOIN posts p ON u.id = p.author_id\nWHERE u.active = true\nGROUP BY u.id\nORDER BY post_count DESC;",
-      "SELECT\n  tc.constraint_name,\n  tc.table_name,\n  kcu.column_name,\n  ccu.table_name AS foreign_table,\n  ccu.column_name AS foreign_column\nFROM information_schema.table_constraints tc\nJOIN information_schema.key_column_usage kcu\n  ON tc.constraint_name = kcu.constraint_name\nJOIN information_schema.constraint_column_usage ccu\n  ON tc.constraint_name = ccu.constraint_name\nWHERE tc.constraint_type = 'FOREIGN KEY'\n  AND tc.table_schema = 'public'\nORDER BY tc.table_name;"
-    ],
-    // ── 中文板块 ──
     chinese: [
       "世界上只有一种真正的英雄主义，那就是认清生活真相之后依然热爱生活。",
       "不积跬步，无以至千里；不积小流，无以成江海。",
@@ -713,58 +660,6 @@
       "今天天气真好，我们去公园散步吧。阳光洒在树叶上，微风吹过，感觉特别舒服。",
       "学习编程是一件很有意思的事情。每天写一点代码，慢慢就会越来越熟练。",
       "坚持每天练习，哪怕只有十分钟。时间久了，就会看到很大的进步。"
-    ],
-    // ── 古诗文库 ──
-    poetry: [
-      // 小学一年级
-      "《咏鹅》——骆宾王\n鹅，鹅，鹅，曲项向天歌。白毛浮绿水，红掌拨清波。",
-      "《春晓》——孟浩然\n春眠不觉晓，处处闻啼鸟。夜来风雨声，花落知多少。",
-      "《静夜思》——李白\n床前明月光，疑是地上霜。举头望明月，低头思故乡。",
-      "《登鹳雀楼》——王之涣\n白日依山尽，黄河入海流。欲穷千里目，更上一层楼。",
-      "《悯农》——李绅\n锄禾日当午，汗滴禾下土。谁知盘中餐，粒粒皆辛苦。",
-      "《画》——王维\n远看山有色，近听水无声。春去花还在，人来鸟不惊。",
-      "《古朗月行》——李白\n小时不识月，呼作白玉盘。又疑瑶台镜，飞在青云端。",
-      "《风》——李峤\n解落三秋叶，能开二月花。过江千尺浪，入竹万竿斜。",
-      // 小学二年级
-      "《村居》——高鼎\n草长莺飞二月天，拂堤杨柳醉春烟。儿童散学归来早，忙趁东风放纸鸢。",
-      "《咏柳》——贺知章\n碧玉妆成一树高，万条垂下绿丝绦。不知细叶谁裁出，二月春风似剪刀。",
-      "《赋得古原草送别》——白居易\n离离原上草，一岁一枯荣。野火烧不尽，春风吹又生。远芳侵古道，晴翠接荒城。又送王孙去，萋萋满别情。",
-      "《望庐山瀑布》——李白\n日照香炉生紫烟，遥看瀑布挂前川。飞流直下三千尺，疑是银河落九天。",
-      "《赠汪伦》——李白\n李白乘舟将欲行，忽闻岸上踏歌声。桃花潭水深千尺，不及汪伦送我情。",
-      // 小学三年级
-      "《绝句》——杜甫\n两个黄鹂鸣翠柳，一行白鹭上青天。窗含西岭千秋雪，门泊东吴万里船。",
-      "《江畔独步寻花》——杜甫\n黄四娘家花满蹊，千朵万朵压枝低。留连戏蝶时时舞，自在娇莺恰恰啼。",
-      "《元日》——王安石\n爆竹声中一岁除，春风送暖入屠苏。千门万户曈曈日，总把新桃换旧符。",
-      "《饮湖上初晴后雨》——苏轼\n水光潋滟晴方好，山色空蒙雨亦奇。欲把西湖比西子，淡妆浓抹总相宜。",
-      "《望天门山》——李白\n天门中断楚江开，碧水东流至此回。两岸青山相对出，孤帆一片日边来。",
-      // 小学四年级
-      "《题西林壁》——苏轼\n横看成岭侧成峰，远近高低各不同。不识庐山真面目，只缘身在此山中。",
-      "《游山西村》——陆游\n莫笑农家腊酒浑，丰年留客足鸡豚。山重水复疑无路，柳暗花明又一村。",
-      "《四时田园杂兴》——范成大\n昼出耘田夜绩麻，村庄儿女各当家。童孙未解供耕织，也傍桑阴学种瓜。",
-      "《独坐敬亭山》——李白\n众鸟高飞尽，孤云独去闲。相看两不厌，只有敬亭山。",
-      "《忆江南》——白居易\n江南好，风景旧曾谙。日出江花红胜火，春来江水绿如蓝。能不忆江南？",
-      // 小学五年级
-      "《示儿》——陆游\n死去元知万事空，但悲不见九州同。王师北定中原日，家祭无忘告乃翁。",
-      "《题临安邸》——林升\n山外青山楼外楼，西湖歌舞几时休？暖风熏得游人醉，直把杭州作汴州。",
-      "《己亥杂诗》——龚自珍\n九州生气恃风雷，万马齐喑究可哀。我劝天公重抖擞，不拘一格降人才。",
-      "《泊船瓜洲》——王安石\n京口瓜洲一水间，钟山只隔数重山。春风又绿江南岸，明月何时照我还？",
-      // 小学六年级
-      "《七步诗》——曹植\n煮豆燃豆萁，豆在釜中泣。本是同根生，相煎何太急？",
-      "《石灰吟》——于谦\n千锤万凿出深山，烈火焚烧若等闲。粉骨碎身浑不怕，要留清白在人间。",
-      "《竹石》——郑燮\n咬定青山不放松，立根原在破岩中。千磨万击还坚劲，任尔东西南北风。",
-      "《长歌行》——汉乐府\n青青园中葵，朝露待日晞。阳春布德泽，万物生光辉。常恐秋节至，焜黄华叶衰。百川东到海，何时复西归？少壮不努力，老大徒伤悲。",
-      // 初中
-      "《观沧海》——曹操\n东临碣石，以观沧海。水何澹澹，山岛竦峙。树木丛生，百草丰茂。秋风萧瑟，洪波涌起。日月之行，若出其中；星汉灿烂，若出其里。",
-      "《次北固山下》——王湾\n客路青山外，行舟绿水前。潮平两岸阔，风正一帆悬。海日生残夜，江春入旧年。乡书何处达？归雁洛阳边。",
-      "《天净沙·秋思》——马致远\n枯藤老树昏鸦，小桥流水人家，古道西风瘦马。夕阳西下，断肠人在天涯。",
-      "《黄鹤楼》——崔颢\n昔人已乘黄鹤去，此地空余黄鹤楼。黄鹤一去不复返，白云千载空悠悠。晴川历历汉阳树，芳草萋萋鹦鹉洲。日暮乡关何处是？烟波江上使人愁。",
-      "《使至塞上》——王维\n单车欲问边，属国过居延。征蓬出汉塞，归雁入胡天。大漠孤烟直，长河落日圆。萧关逢候骑，都护在燕然。",
-      "《春望》——杜甫\n国破山河在，城春草木深。感时花溅泪，恨别鸟惊心。烽火连三月，家书抵万金。白头搔更短，浑欲不胜簪。",
-      "《行路难》——李白\n金樽清酒斗十千，玉盘珍羞直万钱。停杯投箸不能食，拔剑四顾心茫然。欲渡黄河冰塞川，将登太行雪满山。行路难，行路难，多歧路，今安在？长风破浪会有时，直挂云帆济沧海。",
-      "《酬乐天扬州初逢席上见赠》——刘禹锡\n巴山楚水凄凉地，二十三年弃置身。怀旧空吟闻笛赋，到乡翻似烂柯人。沉舟侧畔千帆过，病树前头万木春。",
-      "《水调歌头》——苏轼\n明月几时有？把酒问青天。不知天上宫阙，今夕是何年。我欲乘风归去，又恐琼楼玉宇，高处不胜寒。起舞弄清影，何似在人间。转朱阁，低绮户，照无眠。不应有恨，何事长向别时圆？人有悲欢离合，月有阴晴圆缺，此事古难全。但愿人长久，千里共婵娟。",
-      "《过零丁洋》——文天祥\n辛苦遭逢起一经，干戈寥落四周星。山河破碎风飘絮，身世浮沉雨打萍。惶恐滩头说惶恐，零丁洋里叹零丁。人生自古谁无死？留取丹心照汗青。",
-      "《满江红》——岳飞\n怒发冲冠，凭栏处、潇潇雨歇。抬望眼，仰天长啸，壮怀激烈。三十功名尘与土，八千里路云和月。莫等闲，白了少年头，空悲切！"
     ]
   };
 
@@ -818,7 +713,7 @@
     progressEl.textContent = '0';
 
     textDisplay.classList.remove('zh', 'finger-mode');
-    if (mode === 'chinese' || mode === 'poetry') textDisplay.classList.add('zh');
+    if (mode === 'chinese') textDisplay.classList.add('zh');
     if (mode === 'finger') textDisplay.classList.add('finger-mode');
 
     if (mode === 'finger') {
@@ -858,7 +753,7 @@
     if (!startTime) return;
     var elapsed = (Date.now() - startTime) / 60000;
     var speed = 0;
-    if (mode === 'chinese' || mode === 'poetry') {
+    if (mode === 'chinese') {
       speed = elapsed > 0 ? Math.round(currentIndex / elapsed) : 0; // CPM: chars per minute
     } else if (mode === 'finger') {
       speed = elapsed > 0 ? Math.round(currentIndex / elapsed) : 0; // KPM: keys per minute
@@ -874,7 +769,7 @@
     // Dynamic label
     var labelEl = document.querySelector('.stat-label');
     if (labelEl) {
-      labelEl.textContent = (mode === 'chinese' || mode === 'poetry') ? '字/分' : mode === 'finger' ? '键/分' : '词/分';
+      labelEl.textContent = mode === 'chinese' ? '字/分' : mode === 'finger' ? '键/分' : '词/分';
     }
   }
 
@@ -882,7 +777,7 @@
     finished = true;
     var elapsed = (Date.now() - startTime) / 60000;
     var speed = 0, unit = '词/分';
-    if (mode === 'chinese' || mode === 'poetry') {
+    if (mode === 'chinese') {
       speed = elapsed > 0 ? Math.round(targetChars.length / elapsed) : 0;
       unit = '字/分';
     } else if (mode === 'finger') {
@@ -1102,63 +997,22 @@
   imeInput.addEventListener('focus', function() { textDisplay.classList.add('focused'); });
   imeInput.addEventListener('blur', function() { textDisplay.classList.remove('focused'); });
 
-  // ── 四大板块 × 子模块 ──
-  var categories = {
-    english: { label: '英文', submodes: ['words','quotes'], labels: ['词汇','名言'] },
-    code:    { label: '代码', submodes: ['code_js','code_py','code_ts','code_sql'], labels: ['JavaScript','Python','TypeScript','SQL'] },
-    chinese: { label: '中文', submodes: ['chinese','poetry'], labels: ['现代文','古诗'] },
-    finger:  { label: '指法训练', submodes: ['finger'], labels: ['指法'] }
-  };
-  var category = 'english';
-  var mode = 'words';
-  var defaultSubmode = { english:'words', code:'code_js', chinese:'chinese', finger:'finger' };
-
-  // Render sub-mode buttons
-  var submodeBar = document.getElementById('submodeBar');
-  function renderSubmodes() {
-    var cat = categories[category];
-    var html = '';
-    for (var i = 0; i < cat.submodes.length; i++) {
-      var sm = cat.submodes[i];
-      var activeCls = (mode === sm) ? ' active' : '';
-      html += '<button class="submode-btn' + activeCls + '" data-mode="' + sm + '">' + cat.labels[i] + '</button>';
-    }
-    submodeBar.innerHTML = html;
-
-    // Bind sub-mode clicks
-    submodeBar.querySelectorAll('.submode-btn').forEach(function(btn) {
-      btn.addEventListener('click', function(e) {
-        e.stopPropagation();
-        submodeBar.querySelectorAll('.submode-btn').forEach(function(b) { b.classList.remove('active'); });
-        btn.classList.add('active');
-        mode = btn.dataset.mode;
-        switchMode();
-      });
-    });
-  }
-
-  function switchMode() {
-    if (mode === 'finger') {
-      fingerSelector.classList.add('visible');
-    } else {
-      fingerSelector.classList.remove('visible');
-    }
-    highlightKeyboard();
-    initText();
-    imeInput.focus();
-  }
-
-  // Category buttons
+  // Mode switching
   document.querySelectorAll('.mode-btn').forEach(function(btn) {
     btn.addEventListener('click', function(e) {
       e.stopPropagation();
       document.querySelectorAll('.mode-btn').forEach(function(b) { b.classList.remove('active'); });
       btn.classList.add('active');
-      category = btn.dataset.category;
-      // Switch to first sub-mode of this category
-      mode = categories[category].submodes[0];
-      renderSubmodes();
-      switchMode();
+      mode = btn.dataset.mode;
+
+      if (mode === 'finger') {
+        fingerSelector.classList.add('visible');
+      } else {
+        fingerSelector.classList.remove('visible');
+      }
+      highlightKeyboard();
+      initText();
+      imeInput.focus();
     });
   });
 
@@ -1192,7 +1046,6 @@
 
   // ---- Init ----
   buildKeyboard();
-  renderSubmodes();
   initText();
   imeInput.focus();
 

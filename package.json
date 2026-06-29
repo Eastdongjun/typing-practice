@@ -1,6 +1,6 @@
 {
   "name": "typing-practice",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "打字练习 - 指法训练工具",
   "main": "main.js",
   "scripts": {

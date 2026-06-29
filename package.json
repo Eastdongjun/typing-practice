@@ -5,9 +5,14 @@
   "main": "main.js",
   "scripts": {
     "start": "electron .",
-    "build:mac": "electron-builder --mac",
-    "build:win": "electron-builder --win",
-    "build:all": "electron-builder --mac --win"
+    "check": "bash scripts/check.sh",
+    "release:check": "bash scripts/check.sh",
+    "release:patch": "bash scripts/release.sh patch",
+    "release:minor": "bash scripts/release.sh minor",
+    "release:major": "bash scripts/release.sh major",
+    "build:mac": "electron-builder --mac --arm64 --x64",
+    "build:win": "electron-builder --win --x64",
+    "build:all": "npm run build:mac && npm run build:win"
   },
   "author": "",
   "license": "MIT",
@@ -25,7 +30,8 @@
       "main.js",
       "index.html",
       "manifest.json",
-      "icon-512.png"
+      "icon-512.png",
+      "icon-192.png"
     ],
     "mac": {
       "category": "public.app-category.education",

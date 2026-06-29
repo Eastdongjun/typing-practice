@@ -1,0 +1,89 @@
+name: Build & Release
+
+on:
+  push:
+    tags:
+      - 'v[0-9]+.[0-9]+.[0-9]+'
+
+jobs:
+  # ── Check ──
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: '22' }
+      - run: bash scripts/check.sh
+
+  # ── Windows x64 ──
+  build-win:
+    needs: check
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: '22' }
+      - run: npm ci
+      - run: npx electron-builder --win --x64
+      - uses: actions/upload-artifact@v4
+        with:
+          name: win-x64
+          path: dist/*.exe
+
+  # ── macOS Apple Silicon ──
+  build-mac-arm64:
+    needs: check
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: '22' }
+      - run: npm ci
+      - run: npx electron-builder --mac --arm64
+      - uses: actions/upload-artifact@v4
+        with:
+          name: mac-arm64
+          path: dist/*-arm64.dmg
+
+  # ── macOS Intel ──
+  build-mac-x64:
+    needs: check
+    runs-on: macos-13  # Intel runner
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: '22' }
+      - run: npm ci
+      - run: npx electron-builder --mac --x64
+      - uses: actions/upload-artifact@v4
+        with:
+          name: mac-x64
+          path: dist/*.dmg
+        # Exclude arm64 DMG by using pattern: only .dmg without -arm64
+      - name: Filter x64 only
+        run: |
+          New-Item -ItemType Directory -Force -Path dist-x64
+          Get-ChildItem dist/*.dmg | Where-Object { $_.Name -notmatch 'arm64' } | Copy-Item -Destination dist-x64/
+      - uses: actions/upload-artifact@v4
+        with:
+          name: mac-x64
+          path: dist-x64/*.dmg
+
+  # ── Create GitHub Release ──
+  release:
+    needs: [build-win, build-mac-arm64, build-mac-x64]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+      - run: |
+          mkdir -p assets
+          cp win-x64/*.exe assets/ 2>/dev/null || true
+          cp mac-arm64/*.dmg assets/ 2>/dev/null || true
+          cp mac-x64/*.dmg assets/ 2>/dev/null || true
+          ls -lh assets/
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: assets/*
+          generate_release_notes: true

@@ -403,7 +403,7 @@
   <header>
     <h1>⌨ 打字练习</h1>
     <div class="stats">
-      <div class="stat"><div class="stat-value" id="wpm">0</div><div class="stat-label">字/分</div></div>
+      <div class="stat"><div class="stat-value" id="wpm">0</div><div class="stat-label">词/分</div></div>
       <div class="stat"><div class="stat-value" id="accuracy">-</div><div class="stat-label">准确率</div></div>
       <div class="stat"><div class="stat-value" id="progress">0</div><div class="stat-label">进度</div></div>
     </div>
@@ -685,6 +685,7 @@
   var startTime = null;
   var finished = false;
   var compositionActive = false;
+  var lastErrorIndex = -1;
 
   function pickText() {
     if (mode === 'finger') return generateFingerText(activeFinger);
@@ -701,6 +702,7 @@
     startTime = null;
     finished = false;
     compositionActive = false;
+    lastErrorIndex = -1;
     imeInput.value = '';
     render();
     updateStats();
@@ -724,6 +726,7 @@
     for (var i = 0; i < targetChars.length; i++) {
       var cls = 'char untyped';
       if (i < currentIndex) cls = 'char correct';
+      if (i === lastErrorIndex) cls += ' incorrect';
       if (i === currentIndex && !finished) cls += ' cursor';
       var ch = targetChars[i];
       var esc = ch === '\n' ? '<br>' :
@@ -735,48 +738,80 @@
     }
     if (html === '') html = '<span class="placeholder">点击这里开始打字&hellip;</span>';
     textDisplay.innerHTML = html;
+    // Apply flash on error
+    if (lastErrorIndex >= 0) {
+      textDisplay.classList.add('error-flash');
+      setTimeout(function(){ textDisplay.classList.remove('error-flash'); }, 300);
+    }
   }
 
   function markIncorrect() {
-    var spans = textDisplay.querySelectorAll('.char');
-    if (spans[currentIndex]) spans[currentIndex].classList.add('incorrect');
-    textDisplay.classList.add('error-flash');
-    setTimeout(function(){ textDisplay.classList.remove('error-flash'); }, 300);
+    // Error state now tracked via lastErrorIndex in render()
   }
 
   function updateStats() {
     if (!startTime) return;
     var elapsed = (Date.now() - startTime) / 60000;
-    var divisor = (mode === 'chinese' || mode === 'finger') ? 2 : 5;
-    var words = currentIndex / divisor;
-    var wpm = elapsed > 0 ? Math.round(words / elapsed) : 0;
+    var speed = 0;
+    if (mode === 'chinese') {
+      speed = elapsed > 0 ? Math.round(currentIndex / elapsed) : 0; // CPM: chars per minute
+    } else if (mode === 'finger') {
+      speed = elapsed > 0 ? Math.round(currentIndex / elapsed) : 0; // KPM: keys per minute
+    } else {
+      var words = currentIndex / 5; // standard: 5 chars = 1 word
+      speed = elapsed > 0 ? Math.round(words / elapsed) : 0; // WPM
+    }
     var acc = totalKeystrokes > 0 ? Math.round(((totalKeystrokes - errors) / totalKeystrokes) * 100) : 100;
     var prog = Math.round((currentIndex / targetChars.length) * 100);
-    wpmEl.textContent = wpm;
+    wpmEl.textContent = speed;
     accuracyEl.textContent = acc + '%';
     progressEl.textContent = prog;
+    // Dynamic label
+    var labelEl = document.querySelector('.stat-label');
+    if (labelEl) {
+      labelEl.textContent = mode === 'chinese' ? '字/分' : mode === 'finger' ? '键/分' : '词/分';
+    }
   }
 
   function finish() {
     finished = true;
     var elapsed = (Date.now() - startTime) / 60000;
-    var divisor = (mode === 'chinese' || mode === 'finger') ? 2 : 5;
-    var words = targetChars.length / divisor;
-    var wpm = elapsed > 0 ? Math.round(words / elapsed) : 0;
+    var speed = 0, unit = '词/分';
+    if (mode === 'chinese') {
+      speed = elapsed > 0 ? Math.round(targetChars.length / elapsed) : 0;
+      unit = '字/分';
+    } else if (mode === 'finger') {
+      speed = elapsed > 0 ? Math.round(targetChars.length / elapsed) : 0;
+      unit = '键/分';
+    } else {
+      var words = targetChars.length / 5;
+      speed = elapsed > 0 ? Math.round(words / elapsed) : 0;
+    }
     var acc = totalKeystrokes > 0 ? Math.round(((totalKeystrokes - errors) / totalKeystrokes) * 100) : 100;
-    wpmEl.textContent = wpm;
+    wpmEl.textContent = speed;
     accuracyEl.textContent = acc + '%';
     progressEl.textContent = '100';
+    var labelEl = document.querySelector('.stat-label');
+    if (labelEl) labelEl.textContent = unit;
 
+    // Grading: thresholds differ by mode
     var grade, color;
-    if (wpm >= 50 && acc >= 98) { grade = '大师级'; color = '#fbbf24'; }
-    else if (wpm >= 30 && acc >= 95) { grade = '优秀'; color = '#34d399'; }
-    else if (wpm >= 20 && acc >= 90) { grade = '良好'; color = '#60a5fa'; }
-    else if (wpm >= 10) { grade = '继续加油'; color = '#a78bfa'; }
-    else { grade = '起步阶段'; color = '#f87171'; }
+    if (mode === 'chinese' || mode === 'finger') {
+      if (speed >= 60 && acc >= 98) { grade = '大师级'; color = '#fbbf24'; }
+      else if (speed >= 40 && acc >= 95) { grade = '优秀'; color = '#34d399'; }
+      else if (speed >= 20 && acc >= 90) { grade = '良好'; color = '#60a5fa'; }
+      else if (speed >= 10) { grade = '继续加油'; color = '#a78bfa'; }
+      else { grade = '起步阶段'; color = '#f87171'; }
+    } else {
+      if (speed >= 50 && acc >= 98) { grade = '大师级'; color = '#fbbf24'; }
+      else if (speed >= 30 && acc >= 95) { grade = '优秀'; color = '#34d399'; }
+      else if (speed >= 20 && acc >= 90) { grade = '良好'; color = '#60a5fa'; }
+      else if (speed >= 10) { grade = '继续加油'; color = '#a78bfa'; }
+      else { grade = '起步阶段'; color = '#f87171'; }
+    }
 
     var fingerInfo = mode === 'finger' ? ' | ' + fingerNames[activeFinger] : '';
-    resultEl.innerHTML = '<span style="color:' + color + ';font-weight:600">' + grade + '</span> &mdash; ' + wpm + ' 字/分 | ' + acc + '% 准确率 | ' + errors + ' 个错误' + fingerInfo;
+    resultEl.innerHTML = '<span style="color:' + color + ';font-weight:600">' + grade + '</span> &mdash; ' + speed + ' ' + unit + ' | ' + acc + '% 准确率 | ' + errors + ' 个错误' + fingerInfo;
     render();
   }
 
@@ -786,13 +821,14 @@
     totalKeystrokes++;
     var expected = targetChars[currentIndex];
     if (ch === expected) {
+      lastErrorIndex = -1;  // clear previous error on correct input
       currentIndex++;
       updateStats();
       if (currentIndex >= targetChars.length) { finish(); return; }
     } else {
       errors++;
       updateStats();
-      markIncorrect();
+      lastErrorIndex = currentIndex;  // track error for render
     }
     render();
   }
@@ -800,9 +836,15 @@
   // ---- OS detection ----
   var currentOS = 'mac';
   (function detectOS() {
-    var ua = navigator.platform || navigator.userAgent;
-    if (/Win/i.test(ua)) { currentOS = 'win'; }
-    else if (/Mac/i.test(ua)) { currentOS = 'mac'; }
+    // Prefer modern userAgentData API, fallback to platform/userAgent
+    var platform = '';
+    if (navigator.userAgentData && navigator.userAgentData.platform) {
+      platform = navigator.userAgentData.platform;
+    } else {
+      platform = navigator.platform || navigator.userAgent || '';
+    }
+    if (/Win/i.test(platform)) { currentOS = 'win'; }
+    else if (/Mac/i.test(platform)) { currentOS = 'mac'; }
     kbRows = kbLayouts[currentOS];
     // Update OS toggle buttons
     document.querySelectorAll('.os-toggle-btn').forEach(function(b) {

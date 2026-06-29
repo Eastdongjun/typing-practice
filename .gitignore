@@ -4,3 +4,11 @@ dist/
 *.dmg
 *.zip
 *.blockmap
+dist/
+*.dmg
+*.exe
+*.blockmap
+*.yml
+latest*.yml
+builder-debug.yml
+build/
